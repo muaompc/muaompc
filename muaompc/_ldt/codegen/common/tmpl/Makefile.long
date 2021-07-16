@@ -1,0 +1,31 @@
+CC = gcc
+FLAGS = -Os -Wall -Wstrict-prototypes -pedantic
+OPT = -O3 -funroll-loops
+STD = -std=c99
+
+all: libmtxops mtxops.o main
+
+libmtxops: mtxops.o
+	$(CC) $(FLAGS) $(OPT) $(STD) -shared -Wl,-soname,libmtxops.so.1 \
+		    -o libmtxops.so mtxops.o
+
+mtxops.o: mtxops.c
+	$(CC) $(FLAGS) $(OPT) $(STD) -fPIC -I./include -c mtxops.c
+
+main: main.o mpcformqp.o mpcstructqpx.o mpcgetdatajson.o
+	$(CC) $(FLAGS) $(OPT) $(STD) -I./include -L./lib main.o mpcgetdatajson.o mpcformqp.o mpcstructqpx.o -o main -lcjson -lmtxops -lm
+
+main.o: main.c
+	$(CC) $(FLAGS) $(OPT) $(STD) -I./include -L./lib -c main.c -lcjson -lmtxops
+
+mpcformqp.o: mpcformqp.c
+	$(CC) $(FLAGS) $(OPT) $(STD) -I./include -L./lib -c mpcformqp.c -lcjson -lmtxops
+
+mpcstructqpx.o: mpcstructqpx.c
+	$(CC) $(FLAGS) $(OPT) $(STD) -I./include -L./lib -c mpcstructqpx.c
+
+mpcgetdatajson.o: mpcgetdatajson.c
+	$(CC) $(FLAGS) $(OPT) $(STD) -I./include -L./lib -c mpcgetdatajson.c -lcjson -lmtxops
+
+clean:
+	rm *.o lib*

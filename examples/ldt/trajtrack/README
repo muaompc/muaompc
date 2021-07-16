@@ -1,0 +1,8 @@
+The files contained in this folder exemplify the use of muaompc 
+for trajectory tracking.
+To generate MPC code that can be compiled and run directly on your computer 
+follow the next steps:
+
+1. generate the MPC C-code by run the main.py script
+2. in the folder myprb_mpc/data/mydat/ you will find templates for a main.c and a Makefile. 
+3. modify the those files to suit your needs

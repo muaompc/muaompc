@@ -1,0 +1,14 @@
+# weighting matrices
+Q = [1, 0; 0, 1]
+R = [1]
+P = [1, 0; 0, 1]
+# system matrices
+A = [1.,  0.01; 0.,  0.9]
+B = [1.e-04; 0.02]
+# input constraints
+u_lb = [-100]
+u_ub = [100]
+# dimensions
+N = 5
+n = 2
+m = 1
