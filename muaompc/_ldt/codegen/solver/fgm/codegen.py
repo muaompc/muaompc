@@ -74,6 +74,8 @@ class FGMCVPDataGenerator(CVPDG, object):
         lenH = np.sqrt(H.shape[0])
         if lenH.is_integer() is False:
             raise TypeError
+        else:
+            lenH = int(lenH)
         nu, L = self._compute_extra_step_constant(np.reshape(H, (lenH, lenH)))
         data = self._scale_cost(data, H, L)
         data['nu'] = nu
