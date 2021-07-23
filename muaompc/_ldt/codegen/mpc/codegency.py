@@ -14,34 +14,89 @@ class CythonCodeGenerator(MCG, object):
         self.path = mcg.path
         self.former = mcg.former
         self.solver = mcg.solver
-
-    def generate_code(self):
-        if self.solver == 'fgm':
-            d = self._generate_dict_fgm()
-        elif self.solver == 'alm':
-            d = self._generate_dict_alm()
-        else:
-            raise TypeError
-
-        self._generate_cython_code(d)
-
-    def _generate_dict_fgm(self):
-        return dict(prefix=self.prefix,
+        self.base = dict(prefix=self.prefix,
                    PREFIX=self.prefix.upper(),
                    former=self.former,
                    solver=self.solver,
-                   solver_dep="",
                    doc = codegen_doc
         )
 
-    def _generate_dict_alm(self):
-        # code gen of ALM is identical to FGM, except that now FGM files are a depency
-        d = self._generate_dict_fgm()
-        solver_dep = '"src/{prefix}{solver}dynmem.c","src/{prefix}{solver}.c",'
-        d['solver_dep'] = solver_dep.format(**dict(prefix=self.prefix, solver='fgm'))
-        return d
+    def generate_code(self):
+        if self.solver == 'fgm':
+            dod = _generate_dict_fgm(self.base)
+        elif self.solver == 'alm':
+            dod = _generate_dict_alm(self.base)
+        else:
+            raise TypeError
+        self._generate_cython_code(dod)
 
-    def _generate_cython_code(self, d):
-        self._replace_dict(d, self.prefix, 'ctlsetup.py', srcdir='cython')
-        self._replace_dict(d, self.prefix, 'ctl.pyx', srcdir='cython')
-        self._replace_dict(d, self.prefix, 'Cctl.pxd', srcdir='cython')
+    def _generate_cython_code(self, dod):
+        # dod: a dict of dicts
+        self._replace_dict(dod['setup'], self.prefix, 'ctlsetup.py', srcdir='cython')
+        self._replace_dict(dod['pyx'], self.prefix, 'ctl.pyx', srcdir='cython')
+        self._replace_dict(dod['pxd'], self.prefix, 'Cctl.pxd', srcdir='cython')
+
+
+def _generate_dict_fgm(base):
+    dod = dict()
+    dod['setup'] = dict(base,
+                solver_dep="",
+    )
+    dod['pyx'] = _generate_dict_pyx_fgm(base)
+    dod['pxd'] = dict(base)
+
+    return dod
+
+def _generate_dict_alm(base):
+    # setup of ALM is identical to FGM, except that now FGM files are a dependency
+    dod = _generate_dict_fgm(base)
+    solver_dep = '"src/{prefix}{solver}dynmem.c","src/{prefix}{solver}.c",'
+    dod['setup']['solver_dep'] = solver_dep.format(**dict(prefix=base['prefix'], 
+                                                    solver='fgm'))
+    dod['pyx'] = _generate_dict_pyx_alm(base)
+
+    return dod
+
+def _generate_dict_pyx_fgm(base):
+    items = ['warm_start', 'in_iter']
+    return dict(base,
+            conf_class=_gen_conf_class(items),
+            conf_cinit=_gen_conf_cinit(items),
+            conf_property=_gen_conf_property(items)
+            )
+
+def _generate_dict_pyx_alm(base):
+    items = ['warm_start', 'in_iter', 'ex_iter']
+    return dict(base,
+            conf_class=_gen_conf_class(items),
+            conf_cinit=_gen_conf_cinit(items),
+            conf_property=_gen_conf_property(items)
+            )
+
+def _gen_conf_class(items):
+    cc = ""
+    for item in items:
+        cc += "    cdef int %s\n" % item
+    return cc
+
+def _gen_conf_cinit(items):
+    ci = ""
+    for item in items:
+        ci += "        self.%s = self.conf.%s\n" % (item, item)
+    return ci
+
+_property = """
+    property {item}:
+        def __get__(self):
+            return self.{item}
+
+        def __set__(self, val):
+            self.conf.{item} = val
+            self.{item} = val
+"""
+
+def _gen_conf_property(items):
+    cp = ""
+    for item in items:
+        cp += _property.format(**dict(item=item))
+    return cp

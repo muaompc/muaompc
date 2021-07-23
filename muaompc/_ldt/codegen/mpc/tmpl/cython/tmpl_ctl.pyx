@@ -1,3 +1,5 @@
+"""{doc}
+"""
 
 from numpy import array
 from cython.view cimport array as cvarray
@@ -9,30 +11,12 @@ cimport {prefix}C{solver} as C{solver}
 cimport {prefix}Cctl as Cctl
 
 cdef class Conf(object):
-    cdef int in_iter
-    cdef int warm_start
     cdef C{solver}.{prefix}_{solver}_conf conf
-
+{conf_class}
     def __cinit__(self, uint64_t conf):
         self.conf = deref(<C{solver}.{prefix}_{solver}_conf *> conf)
-        self.in_iter = self.conf.in_iter
-        self.warm_start = self.conf.warm_start
-
-    property in_iter:
-        def __get__(self):
-            return self.in_iter
-
-        def __set__(self, val):
-            self.conf.in_iter = val
-            self.in_iter = val
-
-    property warm_start:
-        def __get__(self):
-            return self.warm_start
-
-        def __set__(self, val):
-            self.conf.warm_start = val
-            self.warm_start = val
+{conf_cinit}
+{conf_property}
 
 cdef class Ctl(object):
     cdef Cctl.{prefix}_ctl *ctl
