@@ -9,9 +9,10 @@ from muaompc._ldt.codegen.mpc.codegen import CCodeGenerator as MCG
 
 class CythonCodeGenerator(MCG, object):
 
-    def __init__(self, mcg):
+    def __init__(self, mcg, cvpcg):
         self.prefix = mcg.prefix
         self.path = mcg.path
+        self.cvp = cvpcg.cvp
         self.former = mcg.former
         self.solver = mcg.solver
         self.base = dict(prefix=self.prefix,
@@ -28,6 +29,7 @@ class CythonCodeGenerator(MCG, object):
             dod = _generate_dict_alm(self.base)
         else:
             raise TypeError
+        dod['pyx'].update(_generate_dict_parameters(self.cvp.par))
         self._generate_cython_code(dod)
 
     def _generate_cython_code(self, dod):
@@ -36,6 +38,39 @@ class CythonCodeGenerator(MCG, object):
         self._replace_dict(dod['pyx'], self.prefix, 'ctl.pyx', srcdir='cython')
         self._replace_dict(dod['pxd'], self.prefix, 'Cctl.pxd', srcdir='cython')
 
+def _generate_dict_parameters(parnames):
+    return dict(par_class=_get_par_class(parnames),
+                par_property=_get_par_property(parnames),
+                par_init=_get_par_init(parnames),
+                parnames_list=str(list(parnames.keys()))
+                )
+
+def _get_par_class(parnames):
+    fmt = ''
+    tab = '    '
+    for parname in parnames:
+        fmt += tab + 'cdef object %s\n' % (parname)
+    return fmt
+
+_par_property = """
+    property {parname}:
+        def __get__(self):
+            return self.{parname}
+"""
+
+def _get_par_property(parnames):
+    fmt = ""
+    for parname in parnames:
+        fmt += _par_property.format(**dict(parname=parname))
+    return fmt
+
+def _get_par_init(parnames):
+    fmt = ""
+    tab = '    '
+    tabs = 2*tab
+    for idx, parname in enumerate(parnames):
+        fmt += tabs + "self.%s = self._set_parameter_property(%d)\n" % (parname, idx)
+    return fmt
 
 def _generate_dict_fgm(base):
     dod = dict()

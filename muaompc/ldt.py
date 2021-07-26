@@ -115,7 +115,7 @@ def setup_mpc_problem(fname, prefix='mpc', destdir='.', verbose=False,
     cycdg.generate_code()
     matcdg.generate_code()
     mcg.generate_code()
-    cymcg = mpccodegency.CythonCodeGenerator(mcg)
+    cymcg = mpccodegency.CythonCodeGenerator(mcg, cvpcg)
     cymcg.generate_code()
     matmcg = mpccodegenmat.MatlabCodeGenerator(mcg)
     matmcg.generate_code()
