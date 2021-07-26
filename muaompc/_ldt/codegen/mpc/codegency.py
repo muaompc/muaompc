@@ -60,39 +60,22 @@ def _generate_dict_alm(base):
 def _generate_dict_pyx_fgm(base):
     items = ['warm_start', 'in_iter']
     return dict(base,
-            conf_class=_gen_conf_class(items),
-            conf_cinit=_gen_conf_cinit(items),
             conf_property=_gen_conf_property(items)
             )
 
 def _generate_dict_pyx_alm(base):
     items = ['warm_start', 'in_iter', 'ex_iter']
     return dict(base,
-            conf_class=_gen_conf_class(items),
-            conf_cinit=_gen_conf_cinit(items),
             conf_property=_gen_conf_property(items)
             )
-
-def _gen_conf_class(items):
-    cc = ""
-    for item in items:
-        cc += "    cdef int %s\n" % item
-    return cc
-
-def _gen_conf_cinit(items):
-    ci = ""
-    for item in items:
-        ci += "        self.%s = self.conf.%s\n" % (item, item)
-    return ci
 
 _property = """
     property {item}:
         def __get__(self):
-            return self.{item}
+            return self.conf.{item}
 
         def __set__(self, val):
             self.conf.{item} = val
-            self.{item} = val
 """
 
 def _gen_conf_property(items):

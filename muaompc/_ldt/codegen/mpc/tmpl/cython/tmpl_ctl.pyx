@@ -3,7 +3,6 @@
 
 from numpy import array
 from cython.view cimport array as cvarray
-from cython.operator cimport dereference as deref
 ctypedef unsigned long long uint64_t
 
 cimport {prefix}C{former} as C{former}
@@ -11,11 +10,10 @@ cimport {prefix}C{solver} as C{solver}
 cimport {prefix}Cctl as Cctl
 
 cdef class Conf(object):
-    cdef C{solver}.{prefix}_{solver}_conf conf
-{conf_class}
+    cdef C{solver}.{prefix}_{solver}_conf *conf
+
     def __cinit__(self, uint64_t conf):
-        self.conf = deref(<C{solver}.{prefix}_{solver}_conf *> conf)
-{conf_cinit}
+        self.conf = <C{solver}.{prefix}_{solver}_conf *> conf
 {conf_property}
 
 cdef class Ctl(object):
