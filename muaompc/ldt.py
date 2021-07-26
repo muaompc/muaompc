@@ -33,6 +33,7 @@ from muaompc._ldt.codegen.solver.alm import codegen as almcodegen
 from muaompc._ldt.codegen.solver.alm import codegency as almcodegency
 from muaompc._ldt.codegen.solver.alm import codegenmat as almcodegenmat
 from muaompc._ldt.codegen.mpc import codegen as mpccodegen
+from muaompc._ldt.codegen.mpc import codegency as mpccodegency
 from muaompc._ldt.codegen.mpc import codegenmat as mpccodegenmat
 from muaompc._ldt.mpc.mpc import MPC
 
@@ -114,6 +115,8 @@ def setup_mpc_problem(fname, prefix='mpc', destdir='.', verbose=False,
     cycdg.generate_code()
     matcdg.generate_code()
     mcg.generate_code()
+    cymcg = mpccodegency.CythonCodeGenerator(mcg, cvpcg)
+    cymcg.generate_code()
     matmcg = mpccodegenmat.MatlabCodeGenerator(mcg)
     matmcg.generate_code()
     matmcg.generate_matlab_make()  # this is always called last
