@@ -248,12 +248,84 @@ To use the generated code in a control loop, the following steps are to be follo
 
 We now proceed to exemplify the use of the generated code from
 steps 1 to 5.
-We start our tutorial using the MATLAB interface, as it is simpler to
-explain. Later we show how it is done in pure C.
+We start our tutorial using the Python interface, as it is simpler to
+explain. Later we show how it is done in pure C, and the MATLAB interface.
 
-.. note::
+The folder name always has the form ``<prb_name>_mpc``, where ``<prb_name>`` is the 
+name of the problem file used to generate the code, e.g. if the problem file is called ``myprb.prb``,
+``<prb_name>=myprb`` and generated directory would be ``myprb_mpc``.
+
+Inside the ``myprb_mpc`` folder, you will find the ``data`` folder. In it, you will find
+the ``mydat`` folder, which contains the generated data files for the ``mydat.dat`` file. 
+For each ``<dat_name>.dat`` MPC data file for which the the call ``ldt.generate_mpc_data(mpc, '<dat_name>.dat')``
+is made, a folder ``<dat_name>`` will be generated on the ``data`` subfolder inside the generated code folder
+``<prb_name>_mpc``.
+
+
+Using the generated code in Python 
+----------------------------------
    
-   The Python interface to the generated C-code will be available in future releases.
+The Python interface makes it possible to 
+directly make use of the generated code and data (i.e. the MPC controller)
+from within Python.
+
+Once the code has been generated,
+the next step is to compile the Python interface.
+Technically, we use Cython to define a C-extension to Python. 
+
+In a console/terminal change to *tutorial* directory ``muaompc_root/examples/ldt/tutorial``. 
+Change then to the generated code folder ``myprb_mpc``. 
+To install the Python extension, execute the ``mpcsetup.py`` installation script::
+
+   python mpcsetup.py install --force
+
+If everything went ok, you should see no errors, and the last three should be (tested in Ubuntu 20.04):: 
+
+   Installed <>.egg
+   Processing dependencies for <>
+   Finished processing dependencies for <>
+
+where  ``<>`` is a general place holder.
+
+Now you can use the interface which is encapsulated in a package called 
+``mpc``  which represents the MPC controller. 
+While in the folder ``myprb_mpc``, fire up your Python interpreter, and type::
+
+   from mpc import mpcctl
+
+The next step is to declare an 
+instance of the class ``mpcctl.Ctl``, which we usually call ``ctl`` (*controller*). 
+The input parameter for the constructor of the class is the name
+of a json file contaning the generated data.
+In this example, the data is saved in the folder
+``myprb_mpc/data/mydat``. In our example,
+the generated json data file is called ``mpcmydat.json``.
+Continue typing in the console::
+
+   ctl = mpcctl.Ctl('data/mydat/mpcmydat.json')
+
+The next step is to configure the optimization algorithm. 
+In this case, we have an input
+constrained problem. The only parameter to configure is the number of iterations of
+the algorithm
+(see section :ref:`tuning` for details).
+For this simple case, let's set it to 10 iterations::
+
+   ctl.conf.in_iter = 10; 
+   
+Let us assume that the current state is `\bar{x} = [0.1 \; -0.5]^T`. 
+The controller object has a field for the parameters defined in the problem file. The parameter ``x_bar`` can be set as follows::
+
+   ctl.x_bar[:] = [0.1, -0.5];
+
+We can finally
+solve our MPC problem for this state by calling::
+
+   ctl.solve_problem();
+   
+The solution is stored in an array ``ctl.u_opt``, whose first ``m`` elements are
+commonly applied to the controlled plant.
+
 
 Using the generated code in MATLAB 
 ----------------------------------
@@ -388,12 +460,4 @@ If everything went okay, you will see the output::
    ctl->u_opt[0] = 3.056814e-02
 
 This concludes our tutorial!
-
-
-****************
-Where to go next
-****************
-
-In the folder ``muaompc_root/examples/ldt/`` you will find further examples. 
-
 
