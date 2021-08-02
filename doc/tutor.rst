@@ -12,3 +12,5 @@ by a tutorial using a simple example.
    :maxdepth: 1
 
    tutor.basic
+   tutor.advanced
+   tutor.next
