@@ -28,7 +28,7 @@ import sphinx_rtd_theme
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.doctest', 'sphinx.ext.pngmath']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.doctest', 'sphinx.ext.imgmath']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -201,12 +201,12 @@ latex_elements = {
 # Extend the preamble with user-defined latex macros
 f = open('latex_macros.sty', 'r')
 try:
-    pngmath_latex_preamble
+    imgmath_latex_preamble
 except NameError:
-    pngmath_latex_preamble = ""
+    imgmath_latex_preamble = ""
 for macro in f:
     latex_elements['preamble'] += macro + '\n'  # latexpdf
-    pngmath_latex_preamble += macro + '\n'  # html
+    imgmath_latex_preamble += macro + '\n'  # html
 
 author = ('P. Zometa, M. Kögel, R. Findeisen \\\\' +
           '\\textsubscript{Institute for Automation Engineering} \\\\' +
