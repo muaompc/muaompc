@@ -1,4 +1,10 @@
-"""Generate Cython interface for C code for the controller."""
+"""Generate Cython interface for C code for the controller.
+
+This is the main interface exposed to the users.
+It does not aim to expose all details of the solver nor former algorithms,
+only the main configuration variables related to the MPC controller.
+"""
+
 from muaompc._ldt import codegen
 import shutil
 import os
