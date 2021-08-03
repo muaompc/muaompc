@@ -8,10 +8,9 @@ In this section we consider a more elaborated example. However, the procedure to
 follow is the same: describe the problem, generate C-code from it, and finally 
 use the generated code.
 
-
 We now consider a problem that presents many of the features
-available. The code for this example can be found 
-inside the *tutorial* directory ``muaompc_root/examples/ldt/tutorial``, 
+available in `muaompc`. The code for this example can be found 
+inside the *tutorial advanced* directory ``muaompc_root/examples/ldt/tutorial_advanced``, 
 where ``muaompc_root`` is the path to the root directory of ``muaompc``.
 
 
@@ -91,23 +90,45 @@ In your favorite text editor write the following::
     f_lb <= Kf*x[N] <= f_ub;
     x[0]=x_bar;
 
-
 With the problem file already finished, we can now write the data file.
+
 
 The MPC data file
 =================
 
-Without going into further details, let us write data file. In your favourite text editor write::
+Observe that the system in the `muaompc` problem description is in discrete-time,
+i.e. ``x[i+1] = A*x[i]+B*u[i], i=0:N-1;``.
+The continuous-time matrices `A_c` and `B_c` of the initial formulation are discretized using a
+zero-order hold. This yields the discrete-time matrices:
+
+.. math::
+   A = \left[ \begin{matrix}
+   0.24 & 0 & 0.18 & 0 & 0 \\
+   -0.37 & 1 & 0.27 & 0 & 0 \\
+   -0.99 & 0 & 0.13 & 0 & 0 \\
+   -48.9 & 64.1 & 2.40 & 1 & 0 \\
+   0 & 0 & 0 & 0 & 0  \\
+   \end{matrix} \right], \;\;
+   B = \left[ \begin{matrix}
+   -1.23 \\
+   -1.44 \\
+   -4.48 \\
+   -1.80 \\
+   1 \\
+   \end{matrix} \right],
+
+
+Without going into further details, let us craete the data file. In your favourite text editor write::
 
     # weighting matrices
     # Q is a 5x5 diagonal matrix
-    Q = [1014.7, 0, 0, 0, 0; 0, 3.2407, 0, 0, 0; 0, 0, 5674.8, 0, 0; 0, 0, 0, 0.3695, 0; 0, 0, 0, 0, 471.75]
-    R = [471.65]
+    Q = [1014, 0, 0, 0, 0; 0, 3.24, 0, 0, 0; 0, 0, 5674, 0, 0; 0, 0, 0, 0.37, 0; 0, 0, 0, 0, 471]
+    R = [472.]
     # P is a copy of Q
     P = [1014.7, 0, 0, 0, 0; 0, 3.2407, 0, 0, 0; 0, 0, 5674.8, 0, 0; 0, 0, 0, 0.3695, 0; 0, 0, 0, 0, 471.75]
     # system matrices (discrete time)
-    A = [  0.23996015,   0., 0.17871287, 0., 0.; -0.37221757, 1., 0.27026411, 0., 0.; -0.99008755, 0., 0.13885973, 0., 0.; -48.93540655, 64.1, 2.39923411, 1., 0.; 0., 0., 0., 0., 0.]
-    B = [-1.2346445; -1.43828223; -4.48282454; -1.79989043; 1.]
+    A = [0.24, 0, 0.18, 0, 0; -0.37, 1, 0.27, 0, 0; -0.99, 0, 0.14, 0, 0; -48.9, 64.1, 2.34, 1, 0; 0, 0, 0, 0, 0]
+    B = [-1.24; -1.44; -4.48; -1.78; 1]
     # input constraints
     u_lb = [-0.262]
     u_ub = [0.262]
@@ -156,7 +177,7 @@ And that's it! If everything went allright, you should now see inside current
 directory a new folder called ``myprb_mpc``. As an alternative to typing the 
 above code, 
 you can execute the file ``main.py`` found in the *tutorial_advanced* directory, 
-which contains exactly that code. The *tutorial* directory already contains
+which contains exactly that code. The *tutorial advanced* directory already contains
 the files ``myprb.prb`` and ``mydat.dat``.
 In the next section, you will learn how to use the generated C code.
 
@@ -186,7 +207,7 @@ and 2 *external* iterations provide an acceptable approximation of the MPC probl
 Using the generated code in Python 
 ----------------------------------
 
-Just as in the simpler tutorial example, we can use the 
+Just as in the *tutorial* example, we can use the 
 Python interface to test our algorithm. 
 Let's try doing the same using the Python interface.
 Go to the to the *tutorial_advanced* directory,
@@ -207,4 +228,12 @@ Finally launch your Python interpreter, and in it type::
   c.x_bar[:] = [0., 0., 0., -400., 0.]
   # get solution
   ctl.solve_problem();
-  ctl.u_opt
+
+The optimal input should be::
+
+  print(ctl.u_opt)
+  array([-0.262     , -0.16655812, -0.01816673,  0.02758426,  0.05402744,
+        0.05627172,  0.04890875,  0.0400374 ,  0.02971596,  0.01780586])
+
+
+This concludes the advanced tutorial.
