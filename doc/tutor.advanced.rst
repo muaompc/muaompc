@@ -5,7 +5,7 @@ A more complex MPC problem
 **************************
 
 In this section we consider a more elaborated example. However, the procedure to
-follow is the same: describe the problem, generate C-code from it, and finally 
+follow is just as discussed in :ref:`tutor.basic`: describe the problem, generate C-code from it, and finally 
 use the generated code.
 
 We now consider a problem that presents many of the features
@@ -174,7 +174,7 @@ continue typing in your Python interpreter::
    ldt.generate_mpc_data(mpc, 'mydat.dat')
 
 And that's it! If everything went allright, you should now see inside current 
-directory a new folder called ``myprb_mpc``. As an alternative to typing the 
+directory a new folder called ``mpc_myprb``. As an alternative to typing the 
 above code, 
 you can execute the file ``main.py`` found in the *tutorial_advanced* directory, 
 which contains exactly that code. The *tutorial advanced* directory already contains
@@ -211,7 +211,7 @@ Just as in the *tutorial* example, we can use the
 Python interface to test our algorithm. 
 Let's try doing the same using the Python interface.
 Go to the to the *tutorial_advanced* directory,
-change to the generated code folder ``myprb_mpc``, 
+change to the generated code folder ``mpc_myprb``, 
 and install the Python extension::
 
    python mpcsetup.py install --force
@@ -225,7 +225,7 @@ Finally launch your Python interpreter, and in it type::
   ctl.conf.ex_iter = 2; 
   ctl.conf.warmstart = 1; 
   # set current state
-  c.x_bar[:] = [0., 0., 0., -400., 0.]
+  ctl.parameters.x_bar[:] = [0., 0., 0., -400., 0.]
   # get solution
   ctl.solve_problem();
 
