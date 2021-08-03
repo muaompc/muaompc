@@ -121,8 +121,7 @@ def setup_mpc_problem(fname, prefix='mpc', destdir='.', verbose=False,
     matmcg.generate_code()
     matmcg.generate_matlab_make()  # this is always called last
     mpc = MPC(prbname, ccg, ddg, sdg, solver, former)
-    # base_dir = mpc.path['dest']
-    base_dir = os.path.join(destdir, prbname+'_'+prefix, 'src')
+    base_dir = mpc.path['dest']
     prb_path = os.path.join(base_dir, 'mpc.pickle')
     with open(prb_path, 'wb') as f:
         pickle.dump(mpc, f)

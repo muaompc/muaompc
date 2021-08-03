@@ -209,7 +209,7 @@ continue typing in your Python interpreter::
    ldt.generate_mpc_data(mpc, 'mydat.dat')
 
 And that's it! If everything went allright, you should now see inside current 
-directory a new folder called ``myprb_mpc``. As an alternative to typing the 
+directory a new folder called ``mpc_myprb``. As an alternative to typing the 
 above code, 
 you can execute the file ``main.py`` found in the *tutorial* directory, 
 which contains exactly that code. The *tutorial* directory already contains
@@ -231,11 +231,57 @@ In the next section, you will learn how to use the generated C code.
    
    ``mpc = ldt.setup_mpc_problem('myprb.prb', numeric='float32')``
 
+Structure of the generated code
+-------------------------------
+
+In general terms, the generated code is structured as follows::
+
+   + <prefix>_<prb_name>
+     + src
+       - C code + interfaces
+     - <prefix>setup.py
+     + data
+       + <dat_name>
+       + <dat_name_1>
+       + ...
+
+The folder where all the generated code is placed has a name in the form ``<prefix>_<prb_name>``, where ``<prefix>`` is a 
+keyword argument passed to ``setup_mpc_problem``, and ``<prb_name>`` is the 
+name of the problem file used to generate the code. The default prefix value is ``'mpc'``.
+For example, to change the default prefix to something like ``xyz``, call:
+
+   ``mpc = ldt.setup_mpc_problem('myprb.prb', prefix='xyz')``
+
+For instance, in this tutorial the problem file is called ``myprb.prb``, 
+and no prefix is specified (i.e. ``<prefix>=mpc``),
+then ``<prb_name>=myprb``, and the directory for the generated code 
+is ``mpc_myprb``.
+
+Inside the ``src`` folder, the code for solving a problem are generated: the C-code, and
+the Cython and MATLAB interfaces. All C-file names start with ``<prefix>``, which creates a sort of *name space*. 
+This allows you to have several generated code coexist in a single application, as long as
+each ``<prefix>`` is unique.
+Similarly, the Cython and Matlab interfaces use the prefix as part of the interface name.
+
+The ``<prefix>setup.py`` file is used to compile the Cython interface (see next section).
+
+Finally, inside the ``<prefix>_<prb_name>`` folder, you will find the ``data`` folder. In it, you will find
+the ``<dat_name>`` folder, which contains the generated data files for the ``<dat_name>.dat`` file. 
+For each ``<dat_name>.dat`` MPC data file for which the call ``ldt.generate_mpc_data(mpc, '<dat_name>.dat')``
+is made, a folder ``<dat_name>`` will be generated inside the ``data`` subfolder.  
+This allows to generate different data sets 
+(e.g. a ``<dat_name_1>.dat`` with different weighting matrices) for the same
+problem.  This can be useful for controller tuning.
+
+For instance, in this tutorial, inside the ``mpc_myprb`` folder, you will find the ``data`` folder, which in turn
+contains the ``mydat`` folder.  ``mydat`` stores the generated data files for the data file ``mydat.dat``  
+that correspond to the MPC problem ``myprb.prb``. 
+
 
 Using the generated code
 ========================
 
-In the folder ``myprb_mpc`` you will find all the automatically 
+In the folder ``mpc_myprb`` you will find all the automatically 
 generated code for the current example.  
 To use the generated code in a control loop, the following steps are to be followed:
 
@@ -249,17 +295,7 @@ To use the generated code in a control loop, the following steps are to be follo
 We now proceed to exemplify the use of the generated code from
 steps 1 to 5.
 We start our tutorial using the Python interface, as it is simpler to
-explain. Later we show how it is done in pure C, and the MATLAB interface.
-
-The folder name always has the form ``<prb_name>_mpc``, where ``<prb_name>`` is the 
-name of the problem file used to generate the code, e.g. if the problem file is called ``myprb.prb``,
-``<prb_name>=myprb`` and generated directory would be ``myprb_mpc``.
-
-Inside the ``myprb_mpc`` folder, you will find the ``data`` folder. In it, you will find
-the ``mydat`` folder, which contains the generated data files for the ``mydat.dat`` file. 
-For each ``<dat_name>.dat`` MPC data file for which the the call ``ldt.generate_mpc_data(mpc, '<dat_name>.dat')``
-is made, a folder ``<dat_name>`` will be generated on the ``data`` subfolder inside the generated code folder
-``<prb_name>_mpc``.
+explain. Later we show how it is done in pure C, and using the MATLAB interface.
 
 
 Using the generated code in Python 
@@ -274,22 +310,25 @@ the next step is to compile the Python interface.
 Technically, we use Cython to define a C-extension to Python. 
 
 In a console/terminal change to *tutorial* directory ``muaompc_root/examples/ldt/tutorial``. 
-Change then to the generated code folder ``myprb_mpc``. 
+Change then to the generated code folder ``mpc_myprb``. 
 To install the Python extension, execute the ``mpcsetup.py`` installation script::
 
    python mpcsetup.py install --force
 
-If everything went ok, you should see no errors, and the last three should be (tested in Ubuntu 20.04):: 
+If everything went ok, you should see no errors, and the last three lines 
+should be (tested in Ubuntu 20.04):: 
 
    Installed <>.egg
-   Processing dependencies for <>
-   Finished processing dependencies for <>
+   Processing dependencies for mpc==1.0
+   Finished processing dependencies for mpc==1.0
 
 where  ``<>`` is a general place holder.
 
 Now you can use the interface which is encapsulated in a package called 
-``mpc``  which represents the MPC controller. 
-While in the folder ``myprb_mpc``, fire up your Python interpreter, and type::
+``mpc``  which represents the MPC controller.  In general, the Python package's name
+is the same as the ``<prefix>`` used during code generation.
+
+While in the folder ``mpc_myprb``, fire up your Python interpreter, and type::
 
    from mpc import mpcctl
 
@@ -298,7 +337,7 @@ instance of the class ``mpcctl.Ctl``, which we usually call ``ctl`` (*controller
 The input parameter for the constructor of the class is the name
 of a json file contaning the generated data.
 In this example, the data is saved in the folder
-``myprb_mpc/data/mydat``. In our example,
+``mpc_myprb/data/mydat``. In our example,
 the generated json data file is called ``mpcmydat.json``.
 Continue typing in the console::
 
@@ -316,7 +355,7 @@ For this simple case, let's set it to 10 iterations::
 Let us assume that the current state is `\bar{x} = [0.1 \; -0.5]^T`. 
 The controller object has a field for the parameters defined in the problem file. The parameter ``x_bar`` can be set as follows::
 
-   ctl.x_bar[:] = [0.1, -0.5];
+   ctl.parameters.x_bar[:] = [0.1, -0.5]
 
 We can finally
 solve our MPC problem for this state by calling::
@@ -325,6 +364,11 @@ solve our MPC problem for this state by calling::
    
 The solution is stored in an array ``ctl.u_opt``, whose first ``m`` elements are
 commonly applied to the controlled plant.
+Print the optimal input vector ``ctl.u_opt``, and if everything went okay, 
+you should see the following::
+
+   print(ctl.u_opt)
+   array([0.03056814, 0.02406793, 0.0178332 , 0.01179073, 0.00586953])
 
 
 Using the generated code in MATLAB 
@@ -338,7 +382,7 @@ Once the code has been generated,
 the next step is to compile the MATLAB interface. 
 
 Start MATLAB, and switch to the folder
-``myprb_mpc/src/matlab``.
+``mpc_myprb/src/matlab``.
 In the MATLAB console type ``mpcmake``, which will execute the ``mpcmake.m`` script. 
 The last step is to add the ``matlab`` directory to the PATH environment in 
 MATLAB.
@@ -346,7 +390,7 @@ For example,
 assuming the MATLAB current directory is 
 the tutorial directory ``muaompc_root/examples/ldt/tutorial``, in the MATLAB console type::
 
-   cd myprb_mpc/src/matlab 
+   cd mpc_myprb/src/matlab 
    mpcmake
    cd ..
    addpath matlab
@@ -357,11 +401,11 @@ instance of that class, which we usually call ``ctl`` (*controller*).
 The input parameter for the constructor of the class is the name
 of a json file contaning the generated data.
 ``muaompc`` by default saves the data in the folder
-``myprb_mpc/data/mydat``. In our example,
+``mpc_myprb/data/mydat``. In our example,
 the generated json data file is called ``mpcmydat.json``.
 Continue typing in the console::
 
-    ctl = mpcctl('myprb_mpc/data/mydat/mpcmydat.json'); 
+    ctl = mpcctl('mpc_myprb/data/mydat/mpcmydat.json'); 
 
 The next step is to configure the optimization algorithm. 
 In this case, we have an input
@@ -390,7 +434,7 @@ The complete MATLAB example can be found in the tutorial folder under ``main.m``
 Using the generated code in C 
 -----------------------------
 
-The folder ``myprb_mpc/data/mydat`` already contains a template 
+The folder ``mpc_myprb/data/mydat`` already contains a template 
 for a main file, called ``mpcmydatmain.c``.
 Switch to the the folder ``mydat`` and open ``mpcmydatmain.c``
 in your favourite editor.
@@ -437,7 +481,7 @@ Finally, the computed control input is found in the array ``ctl->u_opt``.
 
    At the moment the user needs to know the length of the different arrays in the controller structure. This information can be infered by the user from the problem and data files. The length of the different arrays will be available in the controller structure in future releases.
 
-To run an compile this code do the following. Copy the file ``mpcmydatmain_staticmem.c`` into the folder ``myprb_mpc/data/mydat`` and remove the main template file  ``mpcmydatmain.c`` found in ``myprb_mpc/data/mydat`` (otherwise you will end up with two ``main`` functions in two different files, and the compilation will fail).  In that folder you will also find example 
+To run an compile this code do the following. Copy the file ``mpcmydatmain_staticmem.c`` into the folder ``mpc_myprb/data/mydat`` and remove the main template file  ``mpcmydatmain.c`` found in ``mpc_myprb/data/mydat`` (otherwise you will end up with two ``main`` functions in two different files, and the compilation will fail).  In that folder you will also find example 
 Makefiles, called ``mpcmydatMakefile.*``, which compiles the
 generated code. 
 The Makefile ``mpcmydatMakefile.mk`` compiles the code
@@ -449,8 +493,8 @@ in a console::
    
    cd muaompc_root/examples/ldt/tutorial  # the tutorial folder
    python main.py  # generates code and data
-   cp mpcmydatmain_staticmem.c myprb_mpc/data/mydat  # the tutorial main file
-   cd myprb_mpc/data/mydat
+   cp mpcmydatmain_staticmem.c mpc_myprb/data/mydat  # the tutorial main file
+   cd mpc_myprb/data/mydat
    rm mpcmydatmain.c  # remove template main file
    make -f mpcmydatMakefile.mk  # compile
    ./main  # run the controller

@@ -37,7 +37,7 @@ class BaseCodeGenerator(object):
         path['src'] = module.__path__[0]  # the path to the C template files
         path['tmpl'] = os.path.join(path['src'], 'tmpl')
         path['root'] = os.path.join(os.path.abspath(self.destdir),
-                                    self.prbname+'_'+self.prefix)
+                                    self.prefix+'_'+self.prbname)
         path['dest'] = os.path.join(path['root'], 'src')
         path['data'] = os.path.join(path['root'], 'data')
 
