@@ -46,7 +46,7 @@ master_doc = 'index'
 import muaompc
 #rom muaompc import version as muaompc_version
 project = 'muAO-MPC'
-copyright = '2012-2016, Pablo Zometa'
+copyright = '2012-2021, Pablo Zometa'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
