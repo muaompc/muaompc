@@ -284,17 +284,7 @@ def _get_data_from_mat(name):
     return data
 
 def _get_data_dict_from_py(module):
-    try:
-        data = module.data
-    except(AttributeError,):
-        msg = ('Could not find data dictionary in Python module.'
-                'Check that data module contains a dictionary called "data"') 
-        raise SetupError(msg)
-    if not isinstance(data, dict):
-        msg = ('Found "data" attribute in data module, but it is not a dictionary.'
-                'Check that data module contains a dictionary called "data"') 
-        raise SetupError(msg)
-    return data
+    return vars(module)
 
 def _get_data_from_py(name):
     try:
