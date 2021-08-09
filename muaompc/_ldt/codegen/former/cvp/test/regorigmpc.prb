@@ -1,0 +1,9 @@
+variable u[0:N-1](m);
+auxs x[0:N](n);
+parameters x_k(n);
+minimize sum(quad(x[i],Q)+quad(u[i], R), i=0:N-1)+quad(x[N],P);
+subject to x[i+1] = A*x[i]+B*u[i], i=0:N-1;
+x[0]=x_k;
+u_lb <= u[i] <= u_ub, i=0:N-1;
+e_lb <= Kx*x[i] <= e_ub, i=0:N-1;
+f_lb <= F*x[N] <= f_ub;

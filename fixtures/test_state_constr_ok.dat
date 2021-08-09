@@ -1,0 +1,20 @@
+# state_constr_ok: a valid set of numeric values
+# input constraints
+u_lb = [-100] 
+u_ub = [100]
+# state constraints
+e_lb = [-1]
+e_ub = [1]
+Kx = [3.5, 5.5]
+mu = 256.
+# weighting matrices
+Q = [1, 0; 0, 1] 
+R = [1]  
+P = [2, 3; 3, 4]
+# system matrices
+A = [1.,  0.0095162581964040437; 0.,  0.90483741803595941] 
+B = [9.6748360719191485e-05; 0.019032516392808087]
+# dimensions
+N = 3
+n = 2
+m = 1

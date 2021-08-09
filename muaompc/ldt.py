@@ -284,17 +284,7 @@ def _get_data_from_mat(name):
     return data
 
 def _get_data_dict_from_py(module):
-    try:
-        data = module.data
-    except(AttributeError,):
-        msg = ('Could not find data dictionary in Python module.'
-                'Check that data module contains a dictionary called "data"') 
-        raise SetupError(msg)
-    if not isinstance(data, dict):
-        msg = ('Found "data" attribute in data module, but it is not a dictionary.'
-                'Check that data module contains a dictionary called "data"') 
-        raise SetupError(msg)
-    return data
+    return vars(module)
 
 def _get_data_from_py(name):
     try:
@@ -342,7 +332,14 @@ def _parse_data_file(fname):
                 continue
 
             values = data.strip('[]')  # safe input for np.matrix
-            d[name] = np.array(np.matrix(values))
+
+            try: 
+                npmtx = np.matrix(values)
+            except ValueError as err:
+                msg = '%s Offending matrix: %s' % (err, values)
+                raise ValueError(msg)
+
+            d[name] = np.array(npmtx)
 
     return d
 
