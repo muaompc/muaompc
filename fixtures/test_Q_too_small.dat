@@ -1,0 +1,15 @@
+# Q_too_small: state weighting matrix should be of shape 2x2, but is 1x1
+# input constraints
+u_lb = [-100]
+u_ub = [100]
+# weighting matrices
+Q = [1]   # Q should be 2x2 (nxn)
+R = [1]
+P = [2, 3; 3, 4]
+# system matrices
+A = [1.,  0.0095162581964040437; 0.,  0.90483741803595941] 
+B = [9.6748360719191485e-05; 0.019032516392808087]
+# dimensions
+N = 2
+n = 2
+m = 1
