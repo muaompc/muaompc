@@ -9,7 +9,7 @@ follow is just as discussed in :ref:`tutor.basic`: describe the problem, generat
 use the generated code.
 
 We now consider a problem that presents many of the features
-available in `muaompc`. The code for this example can be found 
+available in ``muaompc``. The code for this example can be found 
 inside the *tutorial advanced* directory ``muaompc_root/examples/ldt/tutorial_advanced``, 
 where ``muaompc_root`` is the path to the root directory of ``muaompc``.
 
@@ -96,59 +96,57 @@ With the problem file already finished, we can now write the data file.
 The MPC data file
 =================
 
-Observe that the system in the `muaompc` problem description is in discrete-time,
+Observe that the system in the ``muaompc`` problem description is in discrete-time,
 i.e. ``x[i+1] = A*x[i]+B*u[i], i=0:N-1;``.
-The continuous-time matrices `A_c` and `B_c` of the initial formulation are discretized using a
-zero-order hold. This yields the discrete-time matrices:
+The continuous-time matrices `A_c` and `B_c` of the initial formulation 
+need therefore to be discretized. Besides the ``.dat`` file format presented in the
+basic tutorial, a python or matlab file can be used as data input.
+In this tutorial, we use a Python ``.py`` module as our data file.
+As it is a regular Python file, we can, among other things, import ``scipy`` to helps discretized
+the continuous-time system matrices using a zero-order hold.
+All matrices must be defined as 2-dimensional numpy arrays (e.g. ``R = np.array([[472.]])``).
+For this example, the data file looks like::
 
-.. math::
-   A = \left[ \begin{matrix}
-   0.24 & 0 & 0.18 & 0 & 0 \\
-   -0.37 & 1 & 0.27 & 0 & 0 \\
-   -0.99 & 0 & 0.13 & 0 & 0 \\
-   -48.9 & 64.1 & 2.40 & 1 & 0 \\
-   0 & 0 & 0 & 0 & 0  \\
-   \end{matrix} \right], \;\;
-   B = \left[ \begin{matrix}
-   -1.23 \\
-   -1.44 \\
-   -4.48 \\
-   -1.80 \\
-   1 \\
-   \end{matrix} \right],
+   import numpy as np
+   from scipy.signal import cont2discrete as c2d
+   # weighting matrices
+   Q = np.diag([1014.7, 3.2407, 5674.8, 0.3695, 471.75])
+   R = np.array([[472.]])
+   P = Q
+   # system matrices (continuos time)
+   Ac = np.array([[-1.2822, 0, 0.98, 0], [0, 0, 1, 0], [-5.4293, 0, -1.8366, 0], [-128.2, 128.2, 0, 0]])
+   Bc = np.array([[0.3], [0], [-17], [0]])
+   Cc = np.array([[0, 1, 0, 0], [0, 0, 0, 1], [-128.2, 128.2, 0, 0]])
+   Dc = np.zeros((3,1))
+   # discretization
+   dt = 0.5
+   (A, B, C, D, dt) = c2d((Ac, Bc, Cc, Dc), dt)
+   # The system is extended with a 5th state, to account for slew rate constraints
+   # Extend A from a 4x4 matrix, to a 5x5 matrix
+   # Add first a row of zeros:
+   A = np.concatenate((A, np.zeros((1,4))))
+   # then a column of zeros
+   A = np.concatenate((A, np.zeros((5,1))), axis=1)
+   # Extend B from a 4x1 column vector, to a 5x1 column vector
+   # Add an new row at the bottom, with the element = 1:
+   B = np.concatenate((B, np.ones((1,1))))
+   # input constraints
+   u_lb = np.array([[-0.262]])
+   u_ub = np.array([[0.262]])
+   # state constraints
+   e_lb = np.array([[-0.349, -30, -0.25]]).T
+   e_ub = -1*e_lb
+   Kx = np.array([[0, 1, 0, 0, 0], [-128.2, 128.2, 0, 0, 0], [0., 0., 0., 0., -1.]])
+   Ku = np.array([[0, 0, 1]]).T
+   # terminal state constraints
+   f_lb = e_lb
+   f_ub = e_ub
+   Kf = Kx 
+   # dimensions
+   N = 10  # horizon length
+   n = 5  # number of states
+   m = 1  # number of inputs
 
-
-Without going into further details, let us craete the data file. In your favourite text editor write::
-
-    # weighting matrices
-    # Q is a 5x5 diagonal matrix
-    Q = [1014, 0, 0, 0, 0; 0, 3.24, 0, 0, 0; 0, 0, 5674, 0, 0; 0, 0, 0, 0.37, 0; 0, 0, 0, 0, 471]
-    R = [472.]
-    # P is a copy of Q
-    P = [1014.7, 0, 0, 0, 0; 0, 3.2407, 0, 0, 0; 0, 0, 5674.8, 0, 0; 0, 0, 0, 0.3695, 0; 0, 0, 0, 0, 471.75]
-    # system matrices (discrete time)
-    A = [0.24, 0, 0.18, 0, 0; -0.37, 1, 0.27, 0, 0; -0.99, 0, 0.14, 0, 0; -48.9, 64.1, 2.34, 1, 0; 0, 0, 0, 0, 0]
-    B = [-1.24; -1.44; -4.48; -1.78; 1]
-    # input constraints
-    u_lb = [-0.262]
-    u_ub = [0.262]
-    # state constraints
-    e_lb = [-0.349; -30; -0.25]
-    e_ub = [0.349; 30; 0.25]
-    Kx = [0, 1, 0, 0, 0; -128.2, 128.2, 0, 0, 0; 0., 0., 0., 0., -1.]
-    Ku = [0; 0; 1]
-    f_lb = [-0.349; -30; -0.25]
-    f_ub = [0.349; 30; 0.25]
-    Kf = [0, 1, 0, 0, 0; -128.2, 128.2, 0, 0, 0; 0., 0., 0., 0., -1.]
-    # dimensions
-    N = 10
-    n = 5
-    m = 1
-
-
-.. note::
-
-    At the moment, each matrix or column vector must be described in a single line.
 
 
 Generating the C-code
@@ -168,17 +166,21 @@ by ``myprb.prb``.
 The next step is to generate code for data 
 that can be used with the problem code 
 for ``myprb.prb`` we just generated. 
-To generate code that represents the data in ``mydat.dat``, 
+To generate code that represents the data in ``mydat.py``, 
 continue typing in your Python interpreter::
 
-   ldt.generate_mpc_data(mpc, 'mydat.dat')
+   ldt.generate_mpc_data(mpc, 'mydat.py', safe_mode=False)
 
-And that's it! If everything went allright, you should now see inside current 
+
+Note that to use a Python module like ``mydat.py`` as input, we must set ``safe_mode=False``.
+By default, ``safe_mode=True``, and only the simple ``.dat`` format is accepted.
+
+If everything went allright, you should now see inside current 
 directory a new folder called ``mpc_myprb``. As an alternative to typing the 
 above code, 
 you can execute the file ``main.py`` found in the *tutorial_advanced* directory, 
 which contains exactly that code. The *tutorial advanced* directory already contains
-the files ``myprb.prb`` and ``mydat.dat``.
+the files ``myprb.prb`` and ``mydat.py``.
 In the next section, you will learn how to use the generated C code.
 
 
@@ -197,11 +199,11 @@ number of iterations of the algorithm. The state constrained algorithm is an
 augmented Lagrangian method, which means it requires a double iteration loop 
 (an *internal* and an *external* loop). From simulation
 we determine that 24 *internal* iterations,
-and 2 *external* iterations provide an acceptable approximation of the MPC problem using the warmstart strategy::
+and 2 *external* iterations provide an acceptable approximation of the MPC problem using the warm-start strategy::
 
    ctl.conf.in_iter = 24; /* number of internal iterations */
    ctl.conf.ex_iter = 2; /* number of external iterations */
-   ctl.conf.warmstart = 1; /* automatically warmstart algorithm */
+   ctl.conf.warm_start = 1; /* automatically warm-start algorithm */
 
 
 Using the generated code in Python 
@@ -221,19 +223,18 @@ Finally launch your Python interpreter, and in it type::
   from mpc import mpcctl
   ctl = mpcctl.Ctl('data/mydat/mpcmydat.json')
   # controller solver configuration
-  ctl.conf.in_iter = 24; 
-  ctl.conf.ex_iter = 2; 
-  ctl.conf.warmstart = 1; 
+  ctl.conf.in_iter = 24 
+  ctl.conf.ex_iter = 2 
+  ctl.conf.warm_start = 1 
   # set current state
   ctl.parameters.x_bar[:] = [0., 0., 0., -400., 0.]
   # get solution
-  ctl.solve_problem();
+  ctl.solve_problem()
 
 The optimal input should be::
 
   print(ctl.u_opt)
-  array([-0.262     , -0.16655812, -0.01816673,  0.02758426,  0.05402744,
-        0.05627172,  0.04890875,  0.0400374 ,  0.02971596,  0.01780586])
-
+  [-0.262      -0.13715448  0.00099704  0.03492525  0.05084397  0.04797471
+  0.04002588  0.03289448  0.02473329  0.01478007]
 
 This concludes the advanced tutorial.

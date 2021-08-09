@@ -168,6 +168,12 @@ Without going into further details, let us write data file. In your favourite te
    n = 2
    m = 1
 
+
+.. note::
+
+    At the moment, each matrix or column vector must be described in a single line.
+
+
 Save this file as ``mydat.dat``. 
 The matrices `A` and `B` represent the discrete time model of a DC-motor.
 The state vector is given by `x = [x_1 \; x_2]^T \in \mathbb{R}^n`, where `x_1` and `x_2` are the rotor
