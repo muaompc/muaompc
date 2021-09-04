@@ -57,7 +57,7 @@ class CCodeGenerator(BCG, object):
 
 class PBMCVPDataGenerator(CVPDG, object):
     """
-    Generate json data for the fast gradient method using a
+    Generate json data for the primal barrier method using a
     condensed vectorial parameters problem formulation.
     """
 
@@ -76,9 +76,19 @@ class PBMCVPDataGenerator(CVPDG, object):
         lenH = np.sqrt(H.shape[0])
         if lenH.is_integer() is False:
             raise TypeError
+        else:
+            lenH = int(lenH)
         nu, L = self._compute_extra_step_constant(np.reshape(H, (lenH, lenH)))
         data = self._scale_cost(data, H, L)
         data['nu'] = nu
+        data = self._get_pbm_constants(data)
+        return data
+
+    def _get_pbm_constants(self, data):
+        data['kappa'] = 90.
+        data['roh'] = 0.1
+        data['optvar']['horizon'] = 1
+        data['optvar']['state_veclen'] = 0
         return data
 
     def _compute_extra_step_constant(self, H):
@@ -163,39 +173,19 @@ class CDataGenerator(CCodeGenerator, PBMCVPDataGenerator, object):
             zeros_affine = self._np2Carray(np.zeros(number_affine))
         p_data = self._np2Carray(np.hstack((-v_array, v_array)))
 
-        zeros_optvar_seqlen = self._np2Carray(np.zeros(data['optvar']['seqlen']))
-        zeros_optvar_seqlen_x_optvar_seqlen = self._np2Carray(
-            np.zeros(data['optvar']['seqlen']*data['optvar']['seqlen']))
-        if number_ineq == 0:
-            zeros_ineq = {0}
-            zeros_ineq_x_ineq = {0}
-            zeros_optvar_seqlen_x_number_ineq = {0}
-        else:
-            zeros_ineq = self._np2Carray(np.zeros(number_ineq))
-            zeros_ineq_x_ineq = self._np2Carray(
-                np.zeros(number_ineq*number_ineq))
-            zeros_optvar_seqlen_x_number_ineq = self._np2Carray(
-                np.zeros(data['optvar']['seqlen']*number_ineq))
-        if number_soft == 0:
-            zeros_soft = {0}
-            zeros_soft_x_soft = {0}
-            zeros_optvar_seqlen_x_soft = {0}
-        else:
-            zeros_soft = self._np2Carray(np.zeros(number_soft))
-            zeros_soft_x_soft = self._np2Carray(np.zeros(number_soft*number_soft))
-            zeros_optvar_seqlen_x_soft = self._np2Carray(np.zeros(data['optvar']['seqlen']*number_soft))
-
-
         if self.is_sparse_data == 1:
-            pbm_horizon = int(data['optvar']['seqlen'] / data['optvar']['veclen'])
-            pbm_optvar_veclen = data['optvar']['veclen']
+            # from a condensed problem, get the dimensions for a sparse problem
+            # in particular, note that the sparse optvar is z = [u_0, x_1, ..., u_(N-1) x_N]
             state_veclen = data['par']['x_k']['rows']
-            control_veclen = data['optvar']['veclen'] #- data['par']['x_k']['rows']
+            control_veclen = data['optvar']['veclen']
+            pbm_horizon = int(data['optvar']['seqlen'] // data['optvar']['veclen'])
+            pbm_optvar_veclen = state_veclen + control_veclen
+            pbm_optvar_seqlen = pbm_optvar_veclen * pbm_horizon
             dual_seqlen = pbm_horizon*state_veclen
             zeros_dual_seqlen = self._np2Carray(np.zeros(dual_seqlen))
             zeros_state_veclen = self._np2Carray(np.zeros(state_veclen))
             zeros_state_veclen_x_optvar_veclen = self._np2Carray(
-                np.zeros(state_veclen*data['optvar']['veclen']))
+                np.zeros(state_veclen*pbm_optvar_veclen))
             zeros_state_veclen_x_control_veclen = self._np2Carray(
                 np.zeros(state_veclen*control_veclen))
             zeros_state_veclen_x_state_veclen = self._np2Carray(
@@ -203,7 +193,7 @@ class CDataGenerator(CCodeGenerator, PBMCVPDataGenerator, object):
             zeros_2_x_horizon_x_state_veclen_x_state_veclen = self._np2Carray(
                 np.zeros((2*pbm_horizon)*state_veclen*state_veclen))  # eigentlich reicht (2*pbm_horizon-1)
             zeros_optvar_seqlen_x_dual_seqlen = self._np2Carray(
-                np.zeros(data['optvar']['seqlen']*dual_seqlen))
+                np.zeros(pbm_optvar_seqlen*dual_seqlen))
 
             a_data = self._np2Carray(np.array(self.num['A']).flatten())
             b_data = self._np2Carray(np.array(self.num['B']).flatten())
@@ -221,9 +211,10 @@ class CDataGenerator(CCodeGenerator, PBMCVPDataGenerator, object):
             pbm_sparse = '#define HHMPC_CVP_PRB_SPARSE 1\n'
 
         else:
-            pbm_horizon = 1
+            pbm_horizon = data['optvar']['horizon']
             pbm_optvar_veclen = data['optvar']['seqlen']
-            state_veclen = 0
+            pbm_optvar_seqlen = data['optvar']['seqlen']
+            state_veclen = data['optvar']['state_veclen']
             control_veclen = data['optvar']['veclen']
             dual_seqlen = 0
             zeros_dual_seqlen = {0}  # ISO C forbids zero-size array
@@ -240,6 +231,29 @@ class CDataGenerator(CCodeGenerator, PBMCVPDataGenerator, object):
 
             pbm_sparse = ''
             pbm_sparse += '#define HHMPC_CVP_PRB_SPARSE 0\n'
+
+        zeros_optvar_seqlen = self._np2Carray(np.zeros(pbm_optvar_seqlen))
+        zeros_optvar_seqlen_x_optvar_seqlen = self._np2Carray(
+            np.zeros(pbm_optvar_seqlen*pbm_optvar_seqlen))
+        if number_ineq == 0:
+            zeros_ineq = {0}
+            zeros_ineq_x_ineq = {0}
+            zeros_optvar_seqlen_x_number_ineq = {0}
+        else:
+            zeros_ineq = self._np2Carray(np.zeros(number_ineq))
+            zeros_ineq_x_ineq = self._np2Carray(
+                np.zeros(number_ineq*number_ineq))
+            zeros_optvar_seqlen_x_number_ineq = self._np2Carray(
+                np.zeros(pbm_optvar_seqlen*number_ineq))
+        if number_soft == 0:
+            zeros_soft = {0}
+            zeros_soft_x_soft = {0}
+            zeros_optvar_seqlen_x_soft = {0}
+        else:
+            zeros_soft = self._np2Carray(np.zeros(number_soft))
+            zeros_soft_x_soft = self._np2Carray(np.zeros(number_soft*number_soft))
+            zeros_optvar_seqlen_x_soft = self._np2Carray(np.zeros(pbm_optvar_seqlen*number_soft))
+
 
         pbm_zeros_optvar_veclen_x_optvar_veclen = self._np2Carray(
                 np.zeros(pbm_optvar_veclen*pbm_optvar_veclen))
@@ -273,7 +287,7 @@ class CDataGenerator(CCodeGenerator, PBMCVPDataGenerator, object):
                    state_veclen=state_veclen,
                    control_veclen=control_veclen,
                    pbm_optvar_veclen=pbm_optvar_veclen,
-                   optvar_seqlen=data['optvar']['seqlen'],
+                   optvar_seqlen=pbm_optvar_seqlen,
                    dual_seqlen=dual_seqlen,
                    number_affine=number_affine,
                    number_socc=data['socc']['socc_num'],
