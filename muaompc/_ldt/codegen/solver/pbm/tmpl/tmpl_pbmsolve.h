@@ -2,7 +2,6 @@
 #define {PREFIX}_PBMSOLVE_H
 
 #include "arithmetic.h"
-#include "{prefix}math.h"
 #include "{prefix}mtxops.h"
 
 {pbm_sparse}{pbm_cond}

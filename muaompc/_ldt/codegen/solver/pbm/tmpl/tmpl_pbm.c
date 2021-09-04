@@ -956,7 +956,7 @@ void form_dsoft(real_t *ds, real_t *diags, real_t *rd_soft, real_t *Phi_soft,
         for (j = 0; j < c_veclen; j++){{
             ds[i] -= (Fus+i*c_veclen)[j]*z[j];
         }}
-        ds[i] = {prefix}_smpl_exp(roh[0]*ds[i]);
+        ds[i] = {prefix}_mtx_smpl_exp(roh[0]*ds[i]);
         diags[i*(rowsFus*T+rowsFfs)+i] = ds[i];
         ds[i] = 1 / (1 + ds[i]);
         diags[i*(rowsFus*T+rowsFfs)+i] = diags[i*(rowsFus*T+rowsFfs)+i] * ds[i] * ds[i];
@@ -970,7 +970,7 @@ void form_dsoft(real_t *ds, real_t *diags, real_t *rd_soft, real_t *Phi_soft,
             for (j = 0; j < c_veclen; j++){{
                 ds[i] -= (Fus+(i-k*rowsFus)*c_veclen)[j]*(z+k*c_veclen+(k)*s_veclen)[j];
             }}
-            ds[i] = {prefix}_smpl_exp(roh[0]*ds[i]);
+            ds[i] = {prefix}_mtx_smpl_exp(roh[0]*ds[i]);
             diags[i*(rowsFus*T+rowsFfs)+i] = ds[i];
             ds[i] = 1 / (1 + ds[i]);
             diags[i*(rowsFus*T+rowsFfs)+i] = diags[i*(rowsFus*T+rowsFfs)+i] * ds[i] * ds[i];
@@ -981,7 +981,7 @@ void form_dsoft(real_t *ds, real_t *diags, real_t *rd_soft, real_t *Phi_soft,
         for (j = 0; j < s_veclen; j++){{
             ds[i] -= (Ffs+(i-T*rowsFus)*s_veclen)[j]*(z+T*c_veclen+(T-1)*s_veclen)[j];
         }}
-        ds[i] = {prefix}_smpl_exp(roh[0]*ds[i]);
+        ds[i] = {prefix}_mtx_smpl_exp(roh[0]*ds[i]);
         diags[i*(rowsFus*T+rowsFfs)+i] = ds[i];
         ds[i] = 1 / (1 + ds[i]);
         diags[i*(rowsFus*T+rowsFfs)+i] = diags[i*(rowsFus*T+rowsFfs)+i] * ds[i] * ds[i];

@@ -163,19 +163,19 @@ void form_delta_z(real_t delta_z[],
 //     print_mtx(tmp_optvar_seqlen, T*(n+m), 1);
 //     bwd_subst(delta_z, L_Phi_T, T*(n+m), tmp_optvar_seqlen, 1); */
     
-    fwd_subst(tmp_optvar_seqlen, L_Phi, m, delta_z, 1);
+    {prefix}_mtx_fwd_subst(tmp_optvar_seqlen, L_Phi, m, delta_z, 1);
     for (i = 0; i < T-1; i++){{
-        fwd_subst(tmp_optvar_seqlen+m+i*(n+m), L_Phi+m*m+i*(n+m)*(n+m), n+m, delta_z+m+i*(n+m), 1);
+        {prefix}_mtx_fwd_subst(tmp_optvar_seqlen+m+i*(n+m), L_Phi+m*m+i*(n+m)*(n+m), n+m, delta_z+m+i*(n+m), 1);
     }}
-    fwd_subst(tmp_optvar_seqlen+m+i*(n+m), L_Phi+m*m+i*(n+m)*(n+m), n, delta_z+m+i*(n+m), 1);
+    {prefix}_mtx_fwd_subst(tmp_optvar_seqlen+m+i*(n+m), L_Phi+m*m+i*(n+m)*(n+m), n, delta_z+m+i*(n+m), 1);
 /*     print_mtx(tmp_optvar_seqlen, T*(n+m), 1); */
     
-    bwd_subst(delta_z+m+i*(n+m), L_Phi_T+m*m+i*(n+m)*(n+m), n, tmp_optvar_seqlen+m+i*(n+m), 1);
+    {prefix}_mtx_bwd_subst(delta_z+m+i*(n+m), L_Phi_T+m*m+i*(n+m)*(n+m), n, tmp_optvar_seqlen+m+i*(n+m), 1);
     for (i = T-1; i > 0; i--){{
-        bwd_subst(delta_z+m+(i-1)*(n+m), L_Phi_T+m*m+(i-1)*(n+m)*(n+m), n+m, tmp_optvar_seqlen+m+(i-1)*(n+m), 1);
+        {prefix}_mtx_bwd_subst(delta_z+m+(i-1)*(n+m), L_Phi_T+m*m+(i-1)*(n+m)*(n+m), n+m, tmp_optvar_seqlen+m+(i-1)*(n+m), 1);
     }}
         /*bwd_subst(delta_z+m+(i-1)*(n+m), L_Phi_T+m*m+(i-1)*(n+m)*(n+m), n+m, tmp_optvar_seqlen+m+(i-1)*(n+m), 1);*/
-    bwd_subst(delta_z, L_Phi_T, m, tmp_optvar_seqlen, 1);
+    {prefix}_mtx_bwd_subst(delta_z, L_Phi_T, m, tmp_optvar_seqlen, 1);
 /*     print_mtx(delta_z, T*(n+m), 1); */
 }}
 
@@ -195,18 +195,18 @@ void form_beta(real_t beta[],
 /*//     fwd_subst(tmp1, L_Phi, T*(n+m), rd, 1);
 //     bwd_subst(tmp2, L_Phi_T, T*(n+m), tmp1, 1); */
     
-    fwd_subst(tmp1, L_Phi, m, rd, 1);
+    {prefix}_mtx_fwd_subst(tmp1, L_Phi, m, rd, 1);
     for (i = 0; i < T-1; i++){{
-        fwd_subst(tmp1+m+i*(n+m), L_Phi+m*m+i*(n+m)*(n+m), n+m, rd+m+i*(n+m), 1);
+        {prefix}_mtx_fwd_subst(tmp1+m+i*(n+m), L_Phi+m*m+i*(n+m)*(n+m), n+m, rd+m+i*(n+m), 1);
     }}
-    fwd_subst(tmp1+m+i*(n+m), L_Phi+m*m+i*(n+m)*(n+m), n, rd+m+i*(n+m), 1);
+    {prefix}_mtx_fwd_subst(tmp1+m+i*(n+m), L_Phi+m*m+i*(n+m)*(n+m), n, rd+m+i*(n+m), 1);
     
-    bwd_subst(tmp2+m+i*(n+m), L_Phi_T+m*m+i*(n+m)*(n+m), n, tmp1+m+i*(n+m), 1);
+    {prefix}_mtx_bwd_subst(tmp2+m+i*(n+m), L_Phi_T+m*m+i*(n+m)*(n+m), n, tmp1+m+i*(n+m), 1);
     for (i = T-1; i > 0; i--){{
-        bwd_subst(tmp2+m+(i-1)*(n+m), L_Phi_T+m*m+(i-1)*(n+m)*(n+m), n+m, tmp1+m+(i-1)*(n+m), 1);
+        {prefix}_mtx_bwd_subst(tmp2+m+(i-1)*(n+m), L_Phi_T+m*m+(i-1)*(n+m)*(n+m), n+m, tmp1+m+(i-1)*(n+m), 1);
     }}
     /*bwd_subst(tmp2+m+(i-1)*(n+m), L_Phi_T+m*m+(i-1)*(n+m)*(n+m), n+m, tmp1+m+(i-1)*(n+m), 1);*/
-    bwd_subst(tmp2, L_Phi_T, m, tmp1, 1);
+    {prefix}_mtx_bwd_subst(tmp2, L_Phi_T, m, tmp1, 1);
     
     {prefix}_multiply_C_z(tmp1, C, tmp2, n, m, T);
 /*     {prefix}_mtx_multiply_mtx_vec(tmp1, C, tmp2, T*n, T*(n+m)); */
@@ -224,18 +224,18 @@ void form_delta_v(real_t delta_v[],
     /* {prefix}_mtx_scale(delta_v, beta, -1., T*n, 1); */
     
     for (i = 0; i < T-1; i++) {{
-        fwd_subst(tmp_dual_seqlen+i*n, L_Y+2*i*n*n, n, delta_v+i*n, 1);
+        {prefix}_mtx_fwd_subst(tmp_dual_seqlen+i*n, L_Y+2*i*n*n, n, delta_v+i*n, 1);
         {prefix}_mtx_multiply_mtx_vec(tmp_n, L_Y+2*i*n*n+n*n, tmp_dual_seqlen+i*n, n, n);
         {prefix}_mtx_substract_direct(delta_v+i*n+n, tmp_n, n, 1);
     }}
-    fwd_subst(tmp_dual_seqlen+i*n, L_Y+2*i*n*n, n, delta_v+i*n, 1); /*i=T-1*/
+    {prefix}_mtx_fwd_subst(tmp_dual_seqlen+i*n, L_Y+2*i*n*n, n, delta_v+i*n, 1); /*i=T-1*/
     
     for (i = T-1; i > 0; i--) {{
-        bwd_subst(delta_v+i*n, L_Y_T+2*i*n*n, n, tmp_dual_seqlen+i*n, 1);
+        {prefix}_mtx_bwd_subst(delta_v+i*n, L_Y_T+2*i*n*n, n, tmp_dual_seqlen+i*n, 1);
         {prefix}_mtx_multiply_mtx_vec(tmp_n, L_Y_T+2*i*n*n-n*n, delta_v+i*n, n, n);
         {prefix}_mtx_substract_direct(tmp_dual_seqlen+i*n-n, tmp_n, n, 1);
     }}
-    bwd_subst(delta_v+i*n, L_Y_T+2*i*n*n, n, tmp_dual_seqlen+i*n, 1); /*i=0*/
+    {prefix}_mtx_bwd_subst(delta_v+i*n, L_Y_T+2*i*n*n, n, tmp_dual_seqlen+i*n, 1); /*i=0*/
 }}
 
 void form_Y(real_t L_Y[], real_t *L_Y_T, real_t L_Phi[], real_t *L_Phi_T,
@@ -274,7 +274,7 @@ void form_Y(real_t L_Y[], real_t *L_Y_T, real_t L_Phi[], real_t *L_Phi_T,
             {prefix}_mtx_multiply_mtx_mtx(hilf1, L_Y+2*i*(n*n)-(n*n), L_Y_T+2*i*(n*n)-(n*n), n, n, n);
             {prefix}_mtx_scale_direct(hilf1, -1, n, n);
             {prefix}_mtx_add_direct(hilf1, Y_bl, n, n);
-            cholesky(L_Y+2*i*(n*n), hilf1, n);
+            {prefix}_mtx_cholesky(L_Y+2*i*(n*n), hilf1, n);
             {prefix}_mtx_transpose(L_Y_T+2*i*(n*n), L_Y+2*i*(n*n), n, n);
         }}
         
@@ -306,7 +306,7 @@ void form_Y(real_t L_Y[], real_t *L_Y_T, real_t L_Phi[], real_t *L_Phi_T,
 //                 setBlock(Y, T*n, Y_bl, n, n, i*n, i*n); */
                 /* hilf1 has size (n+m)*(n+m), so there is enough space for all */
                 
-                cholesky(L_Y+2*i*(n*n), Y_bl, n);
+                {prefix}_mtx_cholesky(L_Y+2*i*(n*n), Y_bl, n);
                 {prefix}_mtx_transpose(L_Y_T+2*i*(n*n), L_Y+2*i*(n*n), n, n);
             }}
             
@@ -322,7 +322,7 @@ void form_Y(real_t L_Y[], real_t *L_Y_T, real_t L_Phi[], real_t *L_Phi_T,
                 {prefix}_mtx_multiply_mtx_mtx(hilf1, L_Y+2*i*(n*n)-(n*n), L_Y_T+2*i*(n*n)-(n*n), n, n, n);
                 {prefix}_mtx_scale_direct(hilf1, -1, n, n);
                 {prefix}_mtx_add_direct(hilf1, Y_bl, n, n);
-                cholesky(L_Y+2*i*(n*n), hilf1, n);
+                {prefix}_mtx_cholesky(L_Y+2*i*(n*n), hilf1, n);
                 {prefix}_mtx_transpose(L_Y_T+2*i*(n*n), L_Y+2*i*(n*n), n, n);
             }}
             
@@ -331,7 +331,7 @@ void form_Y(real_t L_Y[], real_t *L_Y_T, real_t L_Phi[], real_t *L_Phi_T,
 //             {prefix}_mtx_transpose(hilf1, Y_bl, n, n);
 //             setBlock(Y, T*n, hilf1, n, n, (i+1)*n, i*n); */
             
-            fwd_subst(L_Y_T+2*i*(n*n)+(n*n), L_Y+2*i*(n*n), n, Y_bl, n);
+            {prefix}_mtx_fwd_subst(L_Y_T+2*i*(n*n)+(n*n), L_Y+2*i*(n*n), n, Y_bl, n);
             {prefix}_mtx_transpose(L_Y+2*i*(n*n)+(n*n), L_Y_T+2*i*(n*n)+(n*n), n, n);
         }}
     }}
@@ -348,10 +348,10 @@ void solveBlock(real_t *mtxA_I, real_t *L, real_t *L_T,
 //     for (ri = 0; ri < dim; ri++){{
 //         (mtxA+ri*dim+ri)[0] += reg[0];
 //     }} */
-    cholesky(L, mtxA, dim);
+    {prefix}_mtx_cholesky(L, mtxA, dim);
     {prefix}_mtx_transpose(L_T, L, dim, dim);
-    fwd_subst(tmp, L, dim, mtxB, colsB);
-    bwd_subst(mtxA_I, L_T, dim, tmp, colsB);
+    {prefix}_mtx_fwd_subst(tmp, L, dim, mtxB, colsB);
+    {prefix}_mtx_bwd_subst(mtxA_I, L_T, dim, tmp, colsB);
     
 /*//     for (ri = 0; ri < dim; ri++){{
 //         (mtxA+ri*dim+ri)[0] -= reg[0];
