@@ -35,8 +35,6 @@ class CCodeGenerator(BaseCodeGenerator, object):
         self._replace_prefix('mtxops.h')
         self._replace_prefix('dynmem.c')
         self._replace_prefix('dynmem.h')
-        self._replace_prefix('math.c')
-        self._replace_prefix('math.h')
 
         self._replace_prefix('Makefile.mk')
 
