@@ -26,6 +26,7 @@ from muaompc._ldt.codegen.former.cvp import codegen as cvpcodegen
 from muaompc._ldt.codegen.former.cvp import codegency as cvpcodegency
 from muaompc._ldt.codegen.former.cvp import codegenmat as cvpcodegenmat
 from muaompc._ldt.codegen.solver.pbm import codegen as pbmcodegen
+from muaompc._ldt.codegen.solver.pbm import codegency as pbmcodegency
 from muaompc._ldt.codegen.solver.fgm import codegen as fgmcodegen
 from muaompc._ldt.codegen.solver.fgm import codegency as fgmcodegency
 from muaompc._ldt.codegen.solver.fgm import codegenmat as fgmcodegenmat
@@ -104,9 +105,9 @@ def setup_mpc_problem(fname, prefix='mpc', destdir='.', verbose=False,
             solver = 'alm'
             mcg = mpccodegen.CCodeGenerator(ccg, solver=solver, former=former)
     if cvp.is_socc_iec or (solver == 'pbm'):
-        cdg = pbmcodegen.CCodeGenerator(ccg)  # Use pbmcodegen.
-        cycdg = fgmcodegency.CythonCodeGenerator(cdg)
-        matcdg = fgmcodegenmat.MatlabCodeGenerator(cdg)
+        cdg = pbmcodegen.CCodeGenerator(ccg)
+        cycdg = pbmcodegency.CythonCodeGenerator(cdg)
+        #matcdg = pbmcodegenmat.MatlabCodeGenerator(cdg)  # interface not yet ready
         ddg = pbmcodegen.PBMCVPDataGenerator(cvpcg)
         sdg = pbmcodegen.CDataGenerator(cdg, cvpcg)
         solver = 'pbm'

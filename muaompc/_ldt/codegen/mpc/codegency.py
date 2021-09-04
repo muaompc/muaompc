@@ -33,8 +33,10 @@ class CythonCodeGenerator(MCG, object):
             dod = _generate_dict_fgm(self.base)
         elif self.solver == 'alm':
             dod = _generate_dict_alm(self.base)
+        elif self.solver == 'pbm':
+            dod = _generate_dict_pbm(self.base)
         else:
-            raise TypeError
+            raise TypeError("Solver %s not recognized." % self.solver)
         dod['pyx'].update(_generate_dict_parameters(self.cvp.par))
         self._generate_cython_code(dod)
 
@@ -96,6 +98,12 @@ def _generate_dict_alm(base):
                                                     solver='fgm'))
     dod['pyx'] = _generate_dict_pyx_alm(base)
 
+    return dod
+
+def _generate_dict_pbm(base):
+    dod = _generate_dict_fgm(base)
+    solver_dep = '"src/{prefix}pbmsolve.c",'
+    dod['setup']['solver_dep'] = solver_dep.format(**dict(prefix=base['prefix']))
     return dod
 
 def _generate_dict_pyx_fgm(base):
