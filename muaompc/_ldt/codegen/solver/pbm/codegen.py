@@ -87,8 +87,14 @@ class PBMCVPDataGenerator(CVPDG, object):
     def _get_pbm_constants(self, data):
         data['kappa'] = 90.
         data['roh'] = 0.1
+        # in the condensed problem we have 1 horizon step:
         data['optvar']['horizon'] = 1
+        #optvar_len = data['optvar']['veclen']*data['optvar']['seqlen']
+        optvar_len = data['optvar']['seqlen']
+        data['optvar']['veclen'] = optvar_len
+        data['optvar']['seqlen'] = optvar_len
         data['optvar']['state_veclen'] = 0
+
         return data
 
     def _compute_extra_step_constant(self, H):
@@ -163,7 +169,11 @@ class CDataGenerator(CCodeGenerator, PBMCVPDataGenerator, object):
         prefix = self._get_full_fname_prefix(dataname)
 
         v_array = np.array(data['pmetric']['V']['fac0']['data'])
-        number_affine = 2 * data['pmetric']['V']['fac0']['rows']
+        b = data['pmetric']['u_lb']['fac0']['rows']  # number of box constraint elements
+        u_array = np.concatenate([-np.eye(b), np.eye(b)])
+        p_data = self._np2Carray(np.hstack((u_array.flatten(), -v_array, v_array)))
+        #number_affine = 2 * data['pmetric']['V']['fac0']['rows']
+        number_affine = 2 * (b + data['pmetric']['V']['fac0']['rows']) 
         number_qc = 0  # TODO Add nb_qc
         number_soft = 0
         number_ineq = number_affine + number_qc + data['socc']['socc_num']
@@ -171,7 +181,6 @@ class CDataGenerator(CCodeGenerator, PBMCVPDataGenerator, object):
             zeros_affine = {0}  # no affine constraints TODO
         else:
             zeros_affine = self._np2Carray(np.zeros(number_affine))
-        p_data = self._np2Carray(np.hstack((-v_array, v_array)))
 
         if self.is_sparse_data == 1:
             # from a condensed problem, get the dimensions for a sparse problem
@@ -212,10 +221,10 @@ class CDataGenerator(CCodeGenerator, PBMCVPDataGenerator, object):
 
         else:
             pbm_horizon = data['optvar']['horizon']
-            pbm_optvar_veclen = data['optvar']['seqlen']
+            pbm_optvar_veclen = data['optvar']['veclen']
             pbm_optvar_seqlen = data['optvar']['seqlen']
             state_veclen = data['optvar']['state_veclen']
-            control_veclen = data['optvar']['veclen']
+            control_veclen = pbm_optvar_veclen
             dual_seqlen = 0
             zeros_dual_seqlen = {0}  # ISO C forbids zero-size array
             zeros_state_veclen = {0}

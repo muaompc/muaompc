@@ -9,17 +9,69 @@
 
 #include <string.h>  /* TODO For? */
 
+#include <stdbool.h>
 #include "{prefix}mtxops.h"
 #include "{prefix}pbm.h"
 
 /* #include <{prefix}usefull.h> */  /* TODO implement {prefix}usefull.h */
 #include "{prefix}pbmsolve.h"
-#if {PREFIX}_PBM_PRB_COND
-#define HHMPC_OS 10 /* TODO */
-#else
-#include "static_data.h" /* TODO implement static_data.h */
-#endif
+
 /* static functions declaration */
+
+static void print_mtx(real_t *m, int r, int c) {{
+    for (int i=0; i<r; i++) {{
+        printf("\n%d ", i);
+        for (int j=0; j<c; j++) {{
+            printf("%.1e, ", m[i*c+j]);
+        }}
+    }}
+    printf("\n");
+    return;
+}}
+  
+static bool {prefix}_pbm_is_close_to_zero(real_t n, real_t tol) {{
+        if ((n < tol) && (n > -tol)) {{
+            return true;
+        }} else {{
+            return false;
+        }}
+}}
+
+static real_t {prefix}_pbm_get_scaling_factor(real_t *num, real_t *den, uint32_t nb_ineq) {{
+    real_t v = 0.;
+    real_t tol = 1e-99;  /* Tolerance for zero */
+
+    for (uint32_t i=0; i<nb_ineq; i++) {{
+        if ({prefix}_pbm_is_close_to_zero(num[i], tol)) {{
+            continue;
+        }}
+        /* If true, you'll get a division by ~0, it should be avoided */
+        if ({prefix}_pbm_is_close_to_zero(den[i], tol)) {{
+            if (den[i] > 0) {{
+                den[i] = tol;
+            }} else {{
+                den[i] = -tol;
+            }}
+            printf("WARNING: division by zero in scaling factor\n");
+        }}
+        v = (num[i]/den[i] > v) ? num[i]/den[i] : v;
+    }}
+    return v;
+}}
+
+static void {prefix}_pbm_form_h(const struct {prefix}_pbm *pbm) {{
+    uint32_t ulen = pbm->optvar_seqlen;
+    for (uint32_t i=0; i<ulen; i++) {{
+        pbm->P_of_z->h[i] = -pbm->u_lb[i];
+        pbm->P_of_z->h[ulen+i] = pbm->u_ub[i];
+
+    }}
+    uint32_t vlen = ((pbm->P_of_z->nb_lin_constr) - (2*ulen)) / 2;
+    for (uint32_t i=0; i< vlen; i++) {{
+        pbm->P_of_z->h[2*ulen + i] = -pbm->v_lb[i];
+        pbm->P_of_z->h[2*ulen+vlen+i] = pbm->v_ub[i];
+    }}
+}}
 
 static void {prefix}_pbm_get_valid(real_t *z_valid, real_t *tmp_otpseq_optseq,
                                    real_t *tmp_optseq,
@@ -98,6 +150,13 @@ void {prefix}_pbm_test_get_valid(const struct {prefix}_pbm *pbm)
                            pbm->tmp5_nb_of_constr);
 }}
 
+/* Returns z_valid that satisfies: P*z_valid < h 
+ * In general, this is done by solving the linear system P*z_valid = h - eps*h
+ * Where eps is a small enough number.
+ * The linear system is reformulated as:
+ * P^T * (P * z_valid - h) = - P^T * eps*h 
+ * 
+ */
 void {prefix}_pbm_get_valid(real_t *z_valid, real_t *P_T_P, real_t *P_T_h,
                             const real_t *P, const real_t *P_T, const real_t *h,
                             const uint32_t optseq, const uint32_t nb_ineq,
@@ -107,40 +166,52 @@ void {prefix}_pbm_get_valid(real_t *z_valid, real_t *P_T_P, real_t *P_T_h,
 {{
     uint32_t i;
     /* TODO tmp_os_x_os for sparse date or use block structure. */
-    real_t tmp1[HHMPC_OS*HHMPC_OS]; /* = tmp1_ov_ov; TODO */
-    real_t tmp2[HHMPC_OS*HHMPC_OS]; /* = tmp2_ov_ov; TODO */
+    //real_t tmp1[HHMPC_OS*HHMPC_OS]; /* = tmp1_ov_ov; TODO */
+    //real_t tmp2[HHMPC_OS*HHMPC_OS]; /* = tmp2_ov_ov; TODO */
+    real_t *tmp1 = tmp1_ov_ov;
+    real_t *tmp2 = tmp2_ov_ov;
     real_t *tmp3 = tmp3_os;
     real_t *z_delta = tmp4_os;
     real_t *tmp4 = tmp5_nb_c;
-    real_t *v = tmp1;  /* Pointer to first entry of tmp1. */
-    real_t *tmp5 = tmp1+1;  /* Pointer to second entry of tmp1,
-                            * used as array of lenght HHMPC_OS. */
-    
-    /* Get violation lines of the inequality constraints. */
+    real_t *tmp5 = tmp1;  /* We reuse tmp1, renamed for clarity */
+
+    /* Get violation lines of the inequality constraints. 
+       tmp4[i] = max(0, (P*z_valid - h)[i])
+       if tmp4[i] == 0, tmp4[i] += eps  (this makes strictly feasible)
+    */
+    real_t eps = 0.0001;  /* TODO: compute according to problem */
     {prefix}_mtx_multiply_mtx_vec(tmp4, P, z_valid, nb_ineq, optseq);
     {prefix}_mtx_substract_direct(tmp4, h, nb_ineq, 1);
-    for (i = 0; i < nb_ineq; i++){{/*
-        printf("%f\n", tmp4[i]);*/
-        tmp4[i] = (tmp4[i] < 0.) ? 0. : tmp4[i] + 0.0001;/*
-        printf("%f\n", tmp4[i]);*/
+    for (i = 0; i < nb_ineq; i++) {{
+        tmp4[i] = (tmp4[i] < 0.) ? 0. : tmp4[i] + eps;
     }}
     
-    /* */
+    /* We want to find the change in z (z_delta) that violates the constrainst 
+    to later substract it from z_valid. We have:
+    P*z_delta = tpm4
+    Solve the following equivalent system for z_delta:
+    P^T * P * z_delta = P^T * tmp4 
+
+    z_delta[i] == 0, if tpm4[i] == 0 (i.e. no change in z_valid)
+    */
     {prefix}_mtx_multiply_mtx_vec(P_T_h, P_T, tmp4, optseq, nb_ineq);
     {prefix}_mtx_multiply_mtx_mtx(P_T_P, P_T, P, optseq, nb_ineq, optseq);
-    for (i = 0; i < optseq; i++){{
+    for (i = 0; i < optseq; i++) {{
             P_T_P[i*optseq+i] += 0.0001;
     }}
     solveBlock(z_delta, tmp1, tmp2, P_T_P,
                 optseq, P_T_h, 1, tmp3);
+
+    /* Finally compute dh = P*z_delta
+     * and scale it by v = max((eps+h[i])/dh[i]) (for d[i]!=0)
+     * to finally compute:
+     * z_valid = z_valid - v*z_delta
+     */
     {prefix}_mtx_multiply_mtx_vec(tmp5, P, z_delta, nb_ineq, optseq);
-    
-    v[0] = 0.;
-    for (i = 0; i < nb_ineq; i++){{
-        v[0] = (tmp4[i]/tmp5[i] > v[0]) ? tmp4[i]/tmp5[i] : v[0];
-    }}/*
-    printf("v = %f\n", v[0]);*/
-    {prefix}_mtx_scale_direct(z_delta, v[0], optseq, 1);
+
+    real_t v = {prefix}_pbm_get_scaling_factor(tmp4, tmp5, nb_ineq);
+
+    {prefix}_mtx_scale_direct(z_delta, v, optseq, 1);
     
     {prefix}_mtx_substract_direct(z_valid, z_delta, optseq, 1);
 }}
@@ -170,7 +241,7 @@ void {prefix}_pbm_solve_problem(const struct {prefix}_pbm *pbm)
 //             pbm->H[i*5+j] *= 500.;
 //         }}
 //     }}*//* TODO Daten korrigieren? */
-    for (i = 0; i < HHMPC_OS; i++){{
+    for (i = 0; i < pbm->optvar_seqlen; i++){{
             pbm->g[i] *= 2.;
     }}
 #endif
@@ -188,7 +259,7 @@ void {prefix}_pbm_solve_problem(const struct {prefix}_pbm *pbm)
     printf("calculated kappa = %.20f\n", pbm->kappa[0]);
 #endif    
       
-    /* Update h for new xk */
+    {prefix}_pbm_form_h(pbm);
     memcpy(pbm->P_of_z->h_hat, pbm->P_of_z->h, sizeof(real_t) * pbm->P_of_z->nb_lin_constr);
 #if 0
 #ifdef HHMPC_SOCPCONDTEST    
@@ -526,9 +597,9 @@ void {prefix}_pbm_get_valid_lin_constr(
 /*             if (pbm->P_of_z->nb_lin_constr/2 + 2*k == {prefix}_pbm_check_valid(pbm, pbm->z_opt)){{ */
                 pbm->z_opt[k] = pbm->P_of_z->h[pbm->P_of_z->nb_lin_constr/2 + 2*k] - delta[0];
                 for (i = 0; i < k; i = i+2){{
-                    pbm->z_opt[k] -= pbm->P_of_z->P[(pbm->P_of_z->nb_lin_constr/2 + 2*k)*HHMPC_OS + i]*pbm->z_opt[i];
+                    pbm->z_opt[k] -= pbm->P_of_z->P[(pbm->P_of_z->nb_lin_constr/2 + 2*k)*pbm->optvar_seqlen + i]*pbm->z_opt[i];
                 }}
-                pbm->z_opt[k] /= pbm->P_of_z->P[(pbm->P_of_z->nb_lin_constr/2 + 2*k)*HHMPC_OS + k];
+                pbm->z_opt[k] /= pbm->P_of_z->P[(pbm->P_of_z->nb_lin_constr/2 + 2*k)*pbm->optvar_seqlen + k];
 /*             }} */
         }}
     }}
@@ -539,9 +610,9 @@ void {prefix}_pbm_get_valid_lin_constr(
 /*             if ((pbm->P_of_z->nb_lin_constr/2 + 2*k) == {prefix}_pbm_check_valid(pbm, pbm->z_opt)){{ */
                 pbm->z_opt[k] = pbm->P_of_z->h[pbm->P_of_z->nb_lin_constr/2 + 2*k] - delta[0];
                 for (i = 0; i < k; i = i+2){{
-                    pbm->z_opt[k] -= pbm->P_of_z->P[(pbm->P_of_z->nb_lin_constr/2 + 2*k)*HHMPC_OS + i]*pbm->z_opt[i];
+                    pbm->z_opt[k] -= pbm->P_of_z->P[(pbm->P_of_z->nb_lin_constr/2 + 2*k)*pbm->optvar_seqlen + i]*pbm->z_opt[i];
                 }}
-                pbm->z_opt[k] /= pbm->P_of_z->P[(pbm->P_of_z->nb_lin_constr/2 + 2*k)*HHMPC_OS + k];
+                pbm->z_opt[k] /= pbm->P_of_z->P[(pbm->P_of_z->nb_lin_constr/2 + 2*k)*pbm->optvar_seqlen + k];
 /*             }} */
         }}
     
