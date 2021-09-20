@@ -94,5 +94,42 @@ extern void {prefix}_mtx_to_eye(real_t mtx[], const uint32_t dimension);
 /* zero matrix for mtx with nb_e entries */
 extern void {prefix}_mtx_to_zero(real_t mtx[], const uint32_t nb_e);
 
+/* cholesky factorization: chol_fac*chol_fac^T = mtx
+ * mtx have size (dimension x dimension),
+ * mtx is poitiv definite and symmetric,
+ * chol_fac is a lower triangular matrix */
+extern void {prefix}_mtx_cholesky(real_t solution[],
+              const real_t mtx[], const uint32_t dimension);
+
+/* check if mtx is positiv definite and symmetric.
+ * return 1 if condition is fullfilled, 0 otherwise
+ * mtx have size (dimension x dimension) */
+extern uint32_t {prefix}_mtx_check_chol(real_t chol_fac[],
+                    const real_t mtx[], const uint32_t dimension);
+
+/* forward substitution: mtxA * solution = mtxB
+ * mtxA has shape (dimA x dimA), lower Dreiecksmatrix
+ * solution and mtxB have shape (dimA x columsB)*/
+extern void {prefix}_mtx_fwd_subst(real_t solution[],
+               const real_t mtxA[], const uint32_t dimensionA,
+               const real_t mtxB[], const uint32_t columsB);
+
+/* backward substitution: mtxA * solution = mtxB
+ * mtxA has shape (dimA x dimA), upper Dreiecksmatrix
+ * solution and mtxB have shape (dimA x columsB)*/
+extern void {prefix}_mtx_bwd_subst(real_t solution[],
+               const real_t mtxA[], const uint32_t dimensionA,
+               const real_t mtxB[], const uint32_t columsB);
+
+/* elementwise comparision between mtxA and mtxB.
+ * return -1 if |mtxA[i]-mtxB[i]| <= accuracy,
+ * return last i for which the above condition is false otherwise */
+extern uint32_t {prefix}_mtx_mtx_cmp(const real_t mtxA[], const real_t mtxB[], real_t dim,
+                 real_t accuracy);
+                
+extern real_t {prefix}_mtx_smpl_exp(real_t exp);
+
+extern real_t {prefix}_mtx_smpl_abs(real_t x);
+
 
 #endif

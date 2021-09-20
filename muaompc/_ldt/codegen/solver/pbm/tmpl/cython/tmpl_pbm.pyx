@@ -3,32 +3,32 @@ import json
 from cython.view cimport array as cvarray
 
 cimport {prefix}Ccvp as Ccvp
-cimport {prefix}Cfgm as Cfgm
+cimport {prefix}Cpbm as Cpbm
 
 cdef class Solver:
-    cdef Cfgm.{prefix}_fgm *fgm
+    cdef Cpbm.{prefix}_pbm *pbm
     cdef Ccvp.{prefix}_cvp *cvp
-    cdef cvarray u_opt
-    cdef cvarray u_ini
+    cdef cvarray z_opt
+    cdef cvarray z_ini
 
     def __cinit__(self):
-        self.fgm = Cfgm.{prefix}_fgm_allocate_solver()
+        self.pbm = Cpbm.{prefix}_pbm_allocate_solver()
         self.cvp = Ccvp.{prefix}_cvp_allocate_former()
 
     def __dealloc__(self):
         # TODO: free memory allocated by malloc
         pass
 
-    property u_opt:
+    property z_opt:
         def __get__(self):
-          return self.u_opt
+          return self.z_opt
 
-    property u_ini:
+    property z_ini:
         def __get__(self):
-          return self.u_ini
-        def __set__(self, u_ini):
-          cdef double [:]u_ini_cv = u_ini
-          self.u_ini[:] = u_ini_cv
+          return self.z_ini
+        def __set__(self, z_ini):
+          cdef double [:]z_ini_cv = z_ini
+          self.z_ini[:] = z_ini_cv
 
     cpdef setup_solver(self, data, fname='data.json'):
         cdef int optvar_seqlen
@@ -40,20 +40,20 @@ cdef class Solver:
         Ccvp.{prefix}_cvp_setup_former(self.cvp, fname)
         cdef Ccvp.{prefix}_cvp_prb *prb
         prb = self.cvp.prb
-        Cfgm.{prefix}_fgm_setup_solver(self.fgm, prb, fname)
-        optvar_seqlen = self.fgm.optvar_seqlen
-        self.u_opt = <double[:optvar_seqlen]> self.fgm.u_opt
-        self.u_ini = <double[:optvar_seqlen]> self.fgm.u_ini
+        Cpbm.{prefix}_pbm_setup_solver(self.pbm, prb, fname)
+        optvar_seqlen = self.pbm.optvar_seqlen
+        self.z_opt = <double[:optvar_seqlen]> self.pbm.z_opt
+        self.z_ini = <double[:optvar_seqlen]> self.pbm.z_ini
 
     cpdef solve_problem(self, pardata):
         cdef double *u
         cdef Ccvp.{prefix}_cvp *ccvp = self.cvp
         Ccvp._py2c_pardata(ccvp, pardata)
         Ccvp.{prefix}_cvp_form_problem(self.cvp)
-        Cfgm.{prefix}_fgm_solve_problem(self.fgm)
+        Cpbm.{prefix}_pbm_solve_problem(self.pbm)
         return
 
     cpdef configure(self, int in_iter, int warm_start):
-        self.fgm.conf.in_iter = in_iter
-        self.fgm.conf.warm_start = warm_start
+        self.pbm.conf.in_iter = in_iter
+        self.pbm.conf.warm_start = warm_start
 

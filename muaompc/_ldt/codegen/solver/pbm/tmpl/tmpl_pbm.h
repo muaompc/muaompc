@@ -114,6 +114,11 @@ struct {prefix}_pbm {{
     real_t *b;  /**< Combined vector for disturbances. */
     real_t *h;  /**< Combined vector for inequality constraints for all time steps. */
     real_t *hsoft;  /**< Combined vector for soft constraints for all time steps. */
+
+    real_t *u_lb;  /**< Lower bound of input box constraints from condensed problem */
+    real_t *u_ub;  /**< Upper bound of input box constraints from condensed problem */
+    real_t *v_lb;  /**< Lower bound of mixed box constraints from condensed problem */
+    real_t *v_ub;  /**< Upper bound of mixed box constraints from condensed problem */
     
     real_t *d;  /**< Vector of length nb_of_ueq_constr. */
     real_t *dsoft;  /**< Additionell term for vector d for soft constraints. */

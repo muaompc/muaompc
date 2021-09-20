@@ -11,6 +11,9 @@
 static {prefix}_dynmem_error_t {prefix}_pbm_parse_elements(
                 struct {prefix}_pbm *pbm, cJSON *data);
 
+static {prefix}_dynmem_error_t {prefix}_pbm_init_zeros(real_t **mtx, uint32_t rows, uint32_t cols);
+static {prefix}_dynmem_error_t {prefix}_pbm_malloc(real_t **mtx, uint32_t rows, uint32_t cols);
+
 /* External function definitions */
 
 struct {prefix}_pbm *{prefix}_pbm_allocate_solver(void)
@@ -37,12 +40,14 @@ struct {prefix}_pbm *{prefix}_pbm_allocate_solver(void)
     return pbm;
 }}
 
+/*
 {prefix}_dynmem_error_t {prefix}_pbm_setup_solver(struct {prefix}_pbm *pbm,
                                             struct {prefix}_socp_prb *prb,
                                             char *fname)
-/* {prefix}_dynmem_error_t {prefix}_pbm_setup_solver(struct {prefix}_pbm *pbm,
+*/
+{prefix}_dynmem_error_t {prefix}_pbm_setup_solver(struct {prefix}_pbm *pbm,
                                             struct {prefix}_cvp_prb *prb,
-                                            char *fname) */
+                                            char *fname)
 {{
     {prefix}_dynmem_error_t ret;
     cJSON *data;
@@ -57,6 +62,7 @@ struct {prefix}_pbm *{prefix}_pbm_allocate_solver(void)
     ret = {prefix}_pbm_parse_elements(pbm, data);
     if ({PREFIX}_DYNMEM_OK != ret) {{return ret;}}
     
+#if STOCMPC_CVP_PRB_SOCC
     pbm->b = prb->b->data;
     /* pbm->h = prb->h->data; */
     pbm->hsoft = prb->hsoft->data;
@@ -373,6 +379,8 @@ struct {prefix}_pbm *{prefix}_pbm_allocate_solver(void)
     bls[i]->data = (real_t *)malloc(sizeof(real_t) * bls[i]->rows * bls[i]->cols);
     if (NULL == bls[i]->data) {{return {PREFIX}_DYNMEM_FAIL;}}
     pbm->Phi_sft_blks = bls;
+
+    #endif
     
     return {PREFIX}_DYNMEM_OK;
 }}
@@ -423,5 +431,23 @@ struct {prefix}_pbm *{prefix}_pbm_allocate_solver(void)
     }}
     pbm->state_veclen = (uint32_t)state_veclen->valueint;
     
+    return {PREFIX}_DYNMEM_OK;
+}}
+
+static {prefix}_dynmem_error_t {prefix}_pbm_init_zeros(real_t **mtx, uint32_t rows, uint32_t cols)
+{{
+    if ({prefix}_pbm_malloc(mtx, rows, cols)) {{
+        return {PREFIX}_DYNMEM_FAIL;
+    }}
+    mpc_mtx_to_zero(*mtx, rows*cols);
+    return {PREFIX}_DYNMEM_OK;
+}}
+
+static {prefix}_dynmem_error_t {prefix}_pbm_malloc(real_t **mtx, uint32_t rows, uint32_t cols)
+{{
+    *mtx = (real_t *)malloc(sizeof(real_t) * rows*cols);
+    if (*mtx == NULL) {{
+        return {PREFIX}_DYNMEM_FAIL;
+    }}
     return {PREFIX}_DYNMEM_OK;
 }}

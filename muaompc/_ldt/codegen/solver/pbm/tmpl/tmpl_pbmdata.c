@@ -9,7 +9,6 @@ uint32_t {prefix}{dataname}_optvar_seqlen = HHMPC_OS;
 uint32_t {prefix}{dataname}_nb_qc =  HHMPC_NB_QC;
 uint32_t {prefix}{dataname}_nb_socc = HHMPC_NB_SOCC;
 #else
-/* TODO Generate Values. */
 uint32_t {prefix}{dataname}_horizon = {pbm_horizon};
 uint32_t {prefix}{dataname}_state_veclen = {state_veclen};
 uint32_t {prefix}{dataname}_optvar_veclen = {pbm_optvar_veclen}; 
@@ -214,11 +213,16 @@ void {prefix}{dataname}_pbm_setup_solver(
     ipm->Fxsoft = prb->Fxsoft->data;
     ipm->Ffsoft = prb->Ffsoft->data; */
     
-    pbm->g = {prefix}{dataname}_gcond_term.data;
+    //pbm->g = {prefix}{dataname}_gcond_term.data;
     pbm->g = prb->g->data;
-    pbm->H = {prefix}{dataname}_Hcond_term.data;
+    //pbm->H = {prefix}{dataname}_Hcond_term.data;
     pbm->H = prb->H->data;
     
+    pbm->u_lb = prb->u_lb->data;
+    pbm->u_ub = prb->u_ub->data;
+    pbm->v_lb = prb->v_lb->data;
+    pbm->v_ub = prb->v_ub->data;
+
     pbm->A = {prefix}{dataname}_A_term.data;
     pbm->B = {prefix}{dataname}_B_term.data;
     pbm->C = {prefix}{dataname}_C_term.data;
