@@ -1,0 +1,10 @@
+variable r[0:N-1](m);
+auxs x[0:N](n) z[0:N](n);
+parameters x_k(n) z_k(n);
+minimize sum(quad(x[i]-z[i],Q)+quad(r[i], R), i=0:N-1)+quad(x[N]-z[N],P);
+subject to x[i+1] = Ax*x[i]+Bx*r[i], i=0:N-1;
+z[i+1] = Az*z[i]+Bz*r[i], i=0:N-1;
+r_lb <= r[i] <= r_ub, i=0:N-1;
+z_lb <= z[i] <= z_ub, i=1:N;
+x[0]=x_k;
+z[0]=z_k;

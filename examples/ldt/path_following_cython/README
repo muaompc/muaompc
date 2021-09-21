@@ -1,0 +1,13 @@
+The files contained in this folder exemplify the use of muaompc 
+of a simple path following of a line.
+First run the main program to generate the code:
+python main.py
+
+Change to the generated folder with the code, and compile the Cython interface:
+cd mpc_myprb
+python mpcsetup.py install --force
+cd ..
+
+Run the simulation code, which makes use of the Cython interface.
+python main_sim.py
+
