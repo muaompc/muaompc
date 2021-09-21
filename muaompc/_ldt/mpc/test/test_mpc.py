@@ -31,6 +31,34 @@ class TestMPC(unittest.TestCase):
         shutil.rmtree(self.destdir, ignore_errors=True)
         shutil.os.chdir(self.basedir)
 
+    def test_ctl_input_constraints(self):
+        # Test that the condensed problem is accessible through 
+        # the controller interface
+        base_dir = os.path.dirname(regmpcdata.__file__)
+        prb_path = os.path.join(base_dir, 'regrefmpc.prb')
+        data_name = 'regmpc'
+        mod_name = 'mpcctlfgm'  # module name
+        dat_path = os.path.join(base_dir, data_name+'.dat')
+        mpc = setup_mpc_problem(prb_path, mod_name, destdir=self.destdir)
+        generate_mpc_data(mpc, dat_path)
+        testdir = os.path.join(self.basedir, '%s/%s_%s/' % (
+            self.destdir, mod_name, 'regrefmpc'))
+        shutil.os.chdir(testdir)
+        call([self.python, mod_name + 'setup.py', 'install'])
+        from mpcctlfgm import mpcctlfgmctl as ctl
+        c = ctl.Ctl('data/%s/%s%s.json' % (data_name, mod_name, data_name))
+        assert_allclose([[0.99872905, 0.00132819], [0.00132819, 0.99861199]], c.prb.H, rtol=1e-6)
+        assert_allclose([[100.],[100]], c.prb.u_ub)
+        assert_allclose([[-100.],[-100]], c.prb.u_lb)
+        assert_allclose([[0.],[0]], c.prb.g)
+        c.parameters.x_k[:] = self.paramref['x_k']
+        c.parameters.xr[:] = self._vecseq2array(self.paramref['xr'])[:,0]
+        c.parameters.ur[:] = self._vecseq2array(self.paramref['ur'])[:,0]
+        c.solve_problem()
+        # before solving the problem, the parametric terms (like g) are updated
+        assert_allclose([[-18.23209433],[-20.26048239]], c.prb.g, rtol=1e-6)
+        shutil.os.chdir('../..')
+
     #unittest.skip('This is how you skip')
     def test_fgm_solver(self):
         base_dir = os.path.dirname(regmpcdata.__file__)

@@ -38,6 +38,11 @@ class CythonCodeGenerator(MCG, object):
         else:
             raise TypeError("Solver %s not recognized." % self.solver)
         dod['pyx'].update(_generate_dict_parameters(self.cvp.par))
+        prbterms = ['H', 'g', 'u_lb', 'u_ub']
+        if not self.cvp.is_inputbox_iec:  # mixed constraints
+            prbterms += ['V', 'v_lb', 'v_ub']
+
+        dod['pyx'].update(_generate_dict_prb(prbterms))
         self._generate_cython_code(dod)
 
     def _generate_cython_code(self, dod):
@@ -47,17 +52,17 @@ class CythonCodeGenerator(MCG, object):
         self._replace_dict(dod['pxd'], self.prefix, 'Cctl.pxd', srcdir='cython')
 
 def _generate_dict_parameters(parnames):
-    return dict(par_class=_get_par_class(parnames),
+    return dict(par_class=_get_class(parnames),
                 par_property=_get_par_property(parnames),
                 par_init=_get_par_init(parnames),
                 parnames_list=str(list(parnames.keys()))
                 )
 
-def _get_par_class(parnames):
+def _get_class(names):
     fmt = ''
     tab = '    '
-    for parname in parnames:
-        fmt += tab + 'cdef object %s\n' % (parname)
+    for name in names:
+        fmt += tab + 'cdef object %s\n' % (name)
     return fmt
 
 _par_property = """
@@ -78,6 +83,35 @@ def _get_par_init(parnames):
     tabs = 2*tab
     for idx, parname in enumerate(parnames):
         fmt += tabs + "self.%s = self._set_parameter_property(%d)\n" % (parname, idx)
+    return fmt
+
+def _generate_dict_prb(names):
+    return dict(prb_class=_get_class(names),
+                prb_property=_get_prb_property(names),
+                prb_init=_get_prb_init(names),
+                )
+
+_prb_property = """
+    property {name}:
+        def __get__(self):
+            data = self.{name}[0]
+            rows = self.{name}[1]
+            cols = self.{name}[2]
+            return data.reshape((rows, cols))
+"""
+
+def _get_prb_property(names):
+    fmt = ""
+    for name in names:
+        fmt += _prb_property.format(**dict(name=name))
+    return fmt
+
+def _get_prb_init(names):
+    fmt = ""
+    tab = '    '
+    tabs = 2*tab
+    for name in names:
+        fmt += tabs + "self.%s = self._set_property(<uint64_t> self.prb.%s)\n" % (name, name)
     return fmt
 
 def _generate_dict_fgm(base):
