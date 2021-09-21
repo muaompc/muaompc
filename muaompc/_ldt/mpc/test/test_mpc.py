@@ -33,30 +33,83 @@ class TestMPC(unittest.TestCase):
 
     def test_ctl_input_constraints(self):
         # Test that the condensed problem is accessible through 
-        # the controller interface
+        # the controller interface (box input constraints case)
         base_dir = os.path.dirname(regmpcdata.__file__)
-        prb_path = os.path.join(base_dir, 'regrefmpc.prb')
+        prb_name = 'regrefmpc'
+        prb_path = os.path.join(base_dir, prb_name + '.prb')
         data_name = 'regmpc'
         mod_name = 'mpcctlfgm'  # module name
         dat_path = os.path.join(base_dir, data_name+'.dat')
         mpc = setup_mpc_problem(prb_path, mod_name, destdir=self.destdir)
         generate_mpc_data(mpc, dat_path)
         testdir = os.path.join(self.basedir, '%s/%s_%s/' % (
-            self.destdir, mod_name, 'regrefmpc'))
+            self.destdir, mod_name, prb_name))
         shutil.os.chdir(testdir)
         call([self.python, mod_name + 'setup.py', 'install'])
         from mpcctlfgm import mpcctlfgmctl as ctl
         c = ctl.Ctl('data/%s/%s%s.json' % (data_name, mod_name, data_name))
-        assert_allclose([[0.99872905, 0.00132819], [0.00132819, 0.99861199]], c.prb.H, rtol=1e-6)
-        assert_allclose([[100.],[100]], c.prb.u_ub)
-        assert_allclose([[-100.],[-100]], c.prb.u_lb)
+        H = np.array([[0.99872905, 0.00132819], [0.00132819, 0.99861199]])
+        u_ub = np.array([[100.],[100]])
+        u_lb = u_ub * -1
+        assert_allclose(H, c.prb.H, atol=1e-6)
+        assert_allclose(u_ub, c.prb.u_ub)
+        assert_allclose(u_lb, c.prb.u_lb)
+        # The parametric terms (like g) are initially zero
         assert_allclose([[0.],[0]], c.prb.g)
         c.parameters.x_k[:] = self.paramref['x_k']
         c.parameters.xr[:] = self._vecseq2array(self.paramref['xr'])[:,0]
         c.parameters.ur[:] = self._vecseq2array(self.paramref['ur'])[:,0]
         c.solve_problem()
         # before solving the problem, the parametric terms (like g) are updated
-        assert_allclose([[-18.23209433],[-20.26048239]], c.prb.g, rtol=1e-6)
+        assert_allclose([[-18.23209433],[-20.26048239]], c.prb.g, atol=1e-6)
+        # The rest must not change
+        assert_allclose(H, c.prb.H, atol=1e-6)
+        assert_allclose(u_ub, c.prb.u_ub)
+        assert_allclose(u_lb, c.prb.u_lb)
+        shutil.os.chdir('../..')
+
+    def test_ctl_mixed_constraints(self):
+        # Test that the condensed problem is accessible through 
+        # the controller interface (mixed constraints case)
+        base_dir = os.path.dirname(regmpcdata.__file__)
+        prb_name = 'regorigmpc'
+        prb_path = os.path.join(base_dir, prb_name + '.prb')
+        data_name = 'regmpc'
+        mod_name = 'mpcctlalm'  # module name
+        dat_path = os.path.join(base_dir, data_name+'.dat')
+        mpc = setup_mpc_problem(prb_path, mod_name, destdir=self.destdir)
+        generate_mpc_data(mpc, dat_path)
+        testdir = os.path.join(self.basedir, '%s/%s_%s/' % (
+            self.destdir, mod_name, prb_name))
+        shutil.os.chdir(testdir)
+        call([self.python, mod_name + 'setup.py', 'install', '--force'])
+        from mpcctlalm import mpcctlalmctl as ctl
+        c = ctl.Ctl('data/%s/%s%s.json' % (data_name, mod_name, data_name))
+        H = np.array([[0.406914, 0.000541], [0.000541, 0.406866]])
+        V = np.array([[0., 0], [0.10501746, 0], [0.01899904, 0.02095512]])
+        u_ub = np.array([[100.],[100]])
+        u_lb = u_ub * -1
+        assert_allclose(H, c.prb.H, atol=1e-6)
+        assert_allclose(V, c.prb.V, atol=1e-6)
+        assert_allclose(u_ub, c.prb.u_ub)
+        assert_allclose(u_lb, c.prb.u_lb)
+        # The parametric terms (like g, v_ub, v_lb) have fixed initial values 
+        assert_allclose([[0.],[0]], c.prb.g)
+        v_ub = np.array([[1.],[1],[0.5]])  # the vanilla constraints in data file
+        v_lb = v_ub * -1
+        assert_allclose(v_ub, c.prb.v_ub)
+        assert_allclose(v_lb, c.prb.v_lb)
+        c.parameters.x_k[:] = self.paramref['x_k']
+        c.solve_problem()
+        # before solving the problem, the parametric terms (like g, v_lb, v_ub) are updated
+        assert_allclose([[0.134226],[0.124076]], c.prb.g, atol=1e-6)
+        assert_allclose([[-22.5], [-21.02973811], [-2.61268764]], c.prb.v_ub, atol=1e-6)
+        assert_allclose([[-24.5], [-23.02973811], [-3.61268764]], c.prb.v_lb, atol=1e-6)
+        # The rest must not change
+        assert_allclose(H, c.prb.H, atol=1e-6)
+        assert_allclose(V, c.prb.V, atol=1e-6)
+        assert_allclose(u_ub, c.prb.u_ub)
+        assert_allclose(u_lb, c.prb.u_lb)
         shutil.os.chdir('../..')
 
     #unittest.skip('This is how you skip')
