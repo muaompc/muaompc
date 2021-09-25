@@ -1,6 +1,10 @@
 #ifndef {PREFIX}_CVPDYNMEM_H
 #define {PREFIX}_CVPDYNMEM_H
 
+#ifdef __cplusplus
+extern "C" {{
+#endif
+
 #include "{prefix}dynmem.h"
 #include "{prefix}cvp.h"
 
@@ -11,5 +15,9 @@ extern struct {prefix}_cvp *{prefix}_cvp_allocate_former(void);
 extern struct {prefix}_cvp_parameters *{prefix}_cvp_allocate_parameters(void);
 extern struct {prefix}_cvp *{prefix}_cvp_free_former(struct {prefix}_cvp *cvp);
 struct {prefix}_cvp_parameters *{prefix}_cvp_free_parameters(struct {prefix}_cvp_parameters *p);
+
+#ifdef __cplusplus
+}}
+#endif
 
 #endif /* {PREFIX}_CVPDYNMEM_H */

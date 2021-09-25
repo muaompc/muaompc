@@ -1,6 +1,10 @@
 #ifndef {PREFIX}FORMQP_H
 #define {PREFIX}FORMQP_H
 
+#ifdef __cplusplus
+extern "C" {{
+#endif
+
 #include "mc04types.h"  /* typedefs */
 #include "arithmetic.h"
 
@@ -99,5 +103,9 @@ struct {prefix}_cvp_parameters {{
 
 extern void {prefix}_cvp_copy_parameters(struct {prefix}_cvp *cvp, struct {prefix}_cvp_parameters *p);
 extern void {prefix}_cvp_form_problem(struct {prefix}_cvp *cvp);
+
+#ifdef __cplusplus
+}}
+#endif
 
 #endif

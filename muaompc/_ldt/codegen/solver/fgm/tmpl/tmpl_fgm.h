@@ -1,6 +1,10 @@
 #ifndef {PREFIX}_FGM_H
 #define {PREFIX}_FGM_H
 
+#ifdef __cplusplus
+extern "C" {{
+#endif
+
 #include "mc04types.h"
 #include "arithmetic.h"
 
@@ -46,5 +50,9 @@ extern void {prefix}_fgm_compute_grad_over_L(const struct {prefix}_fgm *fgm,
                 real_t gradoL[], const real_t w[]);
 
 extern void {prefix}_compute_gxoL(struct {prefix}_fgm *fgm, const real_t x[]);
+
+#ifdef __cplusplus
+}}
+#endif
 
 #endif /* {PREFIX}_FGM_H */

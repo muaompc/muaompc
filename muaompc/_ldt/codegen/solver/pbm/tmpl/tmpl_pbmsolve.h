@@ -1,6 +1,10 @@
 #ifndef {PREFIX}_PBMSOLVE_H
 #define {PREFIX}_PBMSOLVE_H
 
+#ifdef __cplusplus
+extern "C" {{
+#endif
+
 #include "arithmetic.h"
 #include "{prefix}mtxops.h"
 
@@ -115,5 +119,9 @@ void getBlock(real_t block[],
               const real_t mtx[], const uint32_t dimension,
               const uint32_t first_row, const uint32_t first_col,
               const uint32_t size_row, const uint32_t size_col);
+
+#ifdef __cplusplus
+}}
+#endif
 
 #endif  /* {PREFIX}_PBMSOLVE_H */

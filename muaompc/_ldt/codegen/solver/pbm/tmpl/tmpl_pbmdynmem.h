@@ -1,6 +1,10 @@
 #ifndef {PREFIX}_PBMDYNMEM_H
 #define {PREFIX}_PBMDYNMEM_H
 
+#ifdef __cplusplus
+extern "C" {{
+#endif
+
 /* TODO implement socp.h */
 //#include "../{prefix}socp.h"
 #include "{prefix}dynmem.h"
@@ -20,5 +24,9 @@ extern {prefix}_dynmem_error_t {prefix}_pbm_setup_solver(
 extern {prefix}_dynmem_error_t {prefix}_pbm_setup_solver(
                 struct {prefix}_pbm *pbm, struct {prefix}_cvp_prb *prb,
                 char *fname);
+
+#ifdef __cplusplus
+}}
+#endif
 
 #endif /* {PREFIX}_PBMDYNMEM_H */
