@@ -1,6 +1,10 @@
 #ifndef {PREFIX}CTL_H
 #define {PREFIX}CTL_H
 
+#ifdef __cplusplus
+extern "C" {{
+#endif
+
 #include "{prefix}{solver}.h"
 #include "{prefix}{former}.h"
 
@@ -14,5 +18,9 @@ real_t *u_opt;  /**< Optimal control input sequence. */
 
 extern void {prefix}_ctl_form_problem(struct {prefix}_ctl *ctl);
 extern void {prefix}_ctl_solve_problem(struct {prefix}_ctl *ctl);
+
+#ifdef __cplusplus
+}}
+#endif
 
 #endif /* {PREFIX}CTL_H */

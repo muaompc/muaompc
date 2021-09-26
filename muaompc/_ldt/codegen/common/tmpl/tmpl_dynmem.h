@@ -1,6 +1,10 @@
 #ifndef {PREFIX}_DYNMEM_H
 #define {PREFIX}_DYNMEM_H
 
+#ifdef __cplusplus
+extern "C" {{
+#endif
+
 #include "cjson.h"
 
 typedef enum {prefix}_dynmem_error {{
@@ -10,5 +14,9 @@ typedef enum {prefix}_dynmem_error {{
 
 cJSON *{prefix}_dynmem_get_data(char *fname);
 void {prefix}_free(void *p);
+
+#ifdef __cplusplus
+}}
+#endif
 
 #endif

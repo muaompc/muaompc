@@ -1,6 +1,10 @@
 #ifndef {PREFIX}_ALM_H
 #define {PREFIX}_ALM_H
 
+#ifdef __cplusplus
+extern "C" {{
+#endif
+
 #include "{prefix}fgm.h"
 
 /* It is problem specific and defined by the automatic code generation. */
@@ -53,5 +57,9 @@ struct {prefix}_alm {{
 /* External function declarations */
 
 extern void {prefix}_alm_solve_problem(struct {prefix}_alm *alm);
+
+#ifdef __cplusplus
+}}
+#endif
 
 #endif /* {PREFIX}_ALM_H */

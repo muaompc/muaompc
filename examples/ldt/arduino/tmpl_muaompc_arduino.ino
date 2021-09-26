@@ -1,7 +1,5 @@
-extern "C" {
 #include "mpcctl.h"
 #include "mpcmydatctldata.h"
-}
 
 struct mpc_ctl ctlst, *ctl;
 unsigned long t1_cpu;

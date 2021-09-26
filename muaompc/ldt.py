@@ -352,7 +352,7 @@ def _move_to_mucdir(mpc, dataname):
 
 def _move_to_single_dir(mpc, dataname):
     singledirpath = os.path.join(mpc.destdir, 
-                '%s_%s_%s' % (mpc.prbname, dataname, mpc.prefix))
+                '%s_%s_%s' % (mpc.prefix, mpc.prbname, dataname))
     try:
         os.mkdir(singledirpath)
     except FileExistsError:

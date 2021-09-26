@@ -1,6 +1,10 @@
 #ifndef {PREFIX}_PBM_H
 #define {PREFIX}_PBM_H
 
+#ifdef __cplusplus
+extern "C" {{
+#endif
+
 #include "mc04types.h"
 #include "arithmetic.h"
 
@@ -219,5 +223,9 @@ extern void residual(
                 const struct {prefix}_pbm *pbm,
                 const real_t *z, const real_t *v, const real_t *d,
                 const real_t kappa);
+
+#ifdef __cplusplus
+}}
+#endif
 
 #endif  /* {PREFIX}_PBM_H */

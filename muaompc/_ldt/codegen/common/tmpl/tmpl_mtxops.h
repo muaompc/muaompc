@@ -1,6 +1,10 @@
 #ifndef {PREFIX}MTXOPS_H
 #define {PREFIX}MTXOPS_H
 
+#ifdef __cplusplus
+extern "C" {{
+#endif
+
 #include "mc04types.h"  /* typedefs */
 #include "arithmetic.h"
 
@@ -131,5 +135,8 @@ extern real_t {prefix}_mtx_smpl_exp(real_t exp);
 
 extern real_t {prefix}_mtx_smpl_abs(real_t x);
 
+#ifdef __cplusplus
+}}
+#endif
 
 #endif

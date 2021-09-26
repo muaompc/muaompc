@@ -4,6 +4,10 @@
 #ifndef {PREFIX}FIXEDPOINT_H
 #define {PREFIX}FIXEDPOINT_H
 
+#ifdef __cplusplus
+extern "C" {{
+#endif
+
 #include "{PREFIX}mc04types.h"
 
 /* converts the input in fixed-point format into single precision float */
@@ -18,5 +22,9 @@ int32_t fip_add(int32_t a, int32_t b);
 int32_t fip_sub(int32_t a, int32_t b);
 /* returns the first argument divided by the second in fixed-point format */
 int32_t fip_div(int32_t n, int32_t d);
+
+#ifdef __cplusplus
+}}
+#endif
 
 #endif
