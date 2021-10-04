@@ -25,13 +25,13 @@ CLASSIFIERS = [
 
 NAME                = 'muaompc'
 MAINTAINER          = "Pablo Zometa"
-MAINTAINER_EMAIL    = "muao-mpc@ovgu.de"
+MAINTAINER_EMAIL    = "zometa@anixet.com"
 DESCRIPTION         = DOCLINES[0]
 LONG_DESCRIPTION    = "\n".join(DOCLINES[2:])
-URL                 = "http://ifatwww.et.uni-magdeburg.de/syst/mpctool/"
+URL                 = "https://github.com/muaompc/muaompc"
 LICENSE             = 'BSD'
 AUTHOR              = "Pablo Zometa, et.al."
-AUTHOR_EMAIL        = "muao-mpc@ovgu.de"
+AUTHOR_EMAIL        = "zometa@anixet.com"
 PLATFORMS           = ["Windows", "Linux", "Mac OS-X"]
 MAJOR               = 1
 MINOR               = 0
