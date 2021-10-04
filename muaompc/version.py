@@ -1,3 +1,3 @@
 
 # THIS FILE IS GENERATED FROM MUAO-MPC SETUP.PY
-version = '1.0.0-alpha-20160805'
+version = '1.0.0-beta'
