@@ -1,0 +1,8 @@
+variable u[0:N-1](m);
+auxs x[0:N](n) y[0:N](n);
+parameters x_k(n) yr[0:N](n);
+minimize sum(quad(y[i]-yr[i],Q)+quad(u[i], R), i=0:N-1)+quad(y[N]-yr[N],P);
+subject to x[i+1] = A*x[i]+B*u[i], i=0:N-1;
+x[0]=x_k;
+y[i] = Cx*x[i], i=0:N;
+u_lb <= u[i] <= u_ub, i=0:N-1;

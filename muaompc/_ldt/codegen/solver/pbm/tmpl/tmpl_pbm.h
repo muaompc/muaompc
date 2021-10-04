@@ -1,6 +1,10 @@
 #ifndef {PREFIX}_PBM_H
 #define {PREFIX}_PBM_H
 
+#ifdef __cplusplus
+extern "C" {{
+#endif
+
 #include "mc04types.h"
 #include "arithmetic.h"
 
@@ -114,6 +118,11 @@ struct {prefix}_pbm {{
     real_t *b;  /**< Combined vector for disturbances. */
     real_t *h;  /**< Combined vector for inequality constraints for all time steps. */
     real_t *hsoft;  /**< Combined vector for soft constraints for all time steps. */
+
+    real_t *u_lb;  /**< Lower bound of input box constraints from condensed problem */
+    real_t *u_ub;  /**< Upper bound of input box constraints from condensed problem */
+    real_t *v_lb;  /**< Lower bound of mixed box constraints from condensed problem */
+    real_t *v_ub;  /**< Upper bound of mixed box constraints from condensed problem */
     
     real_t *d;  /**< Vector of length nb_of_ueq_constr. */
     real_t *dsoft;  /**< Additionell term for vector d for soft constraints. */
@@ -214,5 +223,9 @@ extern void residual(
                 const struct {prefix}_pbm *pbm,
                 const real_t *z, const real_t *v, const real_t *d,
                 const real_t kappa);
+
+#ifdef __cplusplus
+}}
+#endif
 
 #endif  /* {PREFIX}_PBM_H */

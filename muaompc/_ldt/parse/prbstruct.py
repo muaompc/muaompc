@@ -9,6 +9,10 @@ import muaompc._ldt.parse.prbsym
 desc_fields = ['veclen', 'seqlen', 'is_zero', 'rngend', 'rngidx', 'idxs', 'signs', 'mtxs']
 MatrixFactor = namedtuple('MatrixFactor', desc_fields)
 
+
+class DataError(Exception): pass
+
+
 class ProblemStruct(object):
     def __init__(self, sym):
         self.smb = sym.smb
@@ -16,6 +20,7 @@ class ProblemStruct(object):
         self.min_ = QuadCostFuncFullVectors(sym.smb, sym.min_)
         self.iecs = IneqConstrFullAffineVectors(sym.smb, sym.sub.iecs)
         self.soccs = IneqConstrSecondOrderCone(sym.smb, sym.sub.soccs)
+
 
 class AffineFunction(object):
     """The elementary function v[i] = c + D*u + sum(Pk*pk, k=1:n_p)
@@ -245,6 +250,7 @@ class AffineFunction(object):
                 ini = idx*mtxfac.veclen
                 end = (idx+1)*mtxfac.veclen
                 mtx[:, ini:end] = self._assign_mtx(mtxfac, rows, k)
+
         return mtx
 
     def _assign_mtx(self, mtxfac, rows, k):
@@ -255,7 +261,11 @@ class AffineFunction(object):
                 raise TypeError(msg)
             mtx = mtxfac.signs[k] * np.eye(rows)
         else:
-            # FIXME: check shape compatibility of M
+            if (rows, mtxfac.veclen) != Mk.shape:
+                msg = "Matrix has the wrong shape. "
+                msg += "Expected (rows, columns) %s, got %s. Offending matrix:\n%s" 
+                msg = msg % ((rows, mtxfac.veclen), Mk.shape, Mk)
+                raise DataError(msg)
             mtx = mtxfac.signs[k] * Mk
 
         return mtx
@@ -277,7 +287,10 @@ class FunctionRanged(AffineFunction, object):
             if type(mtxfacs) is list:
                 fullmtx = []
                 for mtxfac in mtxfacs:
-                    rows, cols = mtxfac.shape
+                    try:
+                        rows, cols = mtxfac.shape
+                    except AttributeError:
+                        raise TypeError('No shape in', mtxfac)
                     fullmtx.append(np.zeros((rows*(rngend), cols)))
                 structnum[key] = fullmtx
             else:
@@ -292,7 +305,11 @@ class FunctionRanged(AffineFunction, object):
                 for k, mtxfac in enumerate(mtxfacs):
                     structnum[key][k][i*rows:(i+1)*rows,:] = mtxfac
             else:
-                structnum[key][i*rows:(i+1)*rows,:] = mtxfacs
+                try:
+                    structnum[key][i*rows:(i+1)*rows,:] = mtxfacs
+                except DataError as err:
+                    msg = "%s. Offending matrix:\n%s"  % (err, mtxfacs)
+                    raise DataError(msg)
 
 
 class QuadFunction(AffineFunction, object):
@@ -319,6 +336,21 @@ class QuadFunction(AffineFunction, object):
         sign = eval(self.sign, num)
         mtx = sign * eval(self.mtx, num)
         structnum['quadmtx'] = mtx
+
+        if mtx.shape[0] != mtx.shape[1]:
+            msg = "Expected matrix '%s' to be square. " 
+            msg += "Got shape (rows, columns): %s" 
+            msg = msg % (self.mtx, mtx.shape)
+            raise DataError(msg)
+
+        rows = self._get_rows(num)
+        if mtx.shape[0] != rows:
+            msg = "Expected matrix '%s' to have shape (rows, columns) (%d, %d)"
+            msg += ". Got shape: %s" 
+            msg = msg % (self.mtx, rows, rows, mtx.shape)
+            raise DataError(msg)
+
+        #print("\nAFFINE FUNCTION NUM: %s  --%s %s:\n%s\n" % (self._get_rows(num), type(mtx), self.mtx, mtx))
         return structnum
 
 
@@ -465,8 +497,10 @@ class IneqConstrFullAffineVectors(FunctionRanged, object):
             lower.rows_mtx = centre.rows_mtx
             upper.rows_mtx = centre.rows_mtx
             # Only single vectors supported as fixed values
-            lower.struct['fix'] = lower.struct['fix']._replace(veclen=lower.rows_mtx, seqlen=None)
-            upper.struct['fix'] = upper.struct['fix']._replace(veclen=upper.rows_mtx, seqlen=None)
+            #print("lower B: ", lower.struct['fix'])
+            #lower.struct['fix'] = lower.struct['fix']._replace(veclen=lower.rows_mtx, seqlen=None)
+            #upper.struct['fix'] = upper.struct['fix']._replace(veclen=upper.rows_mtx, seqlen=None)
+            #print("lower A: ", lower.struct['fix'])
 
             rngs.append(iec.rng)
             lowers.append(lower)

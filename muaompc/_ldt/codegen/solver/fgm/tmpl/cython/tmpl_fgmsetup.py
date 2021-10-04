@@ -1,4 +1,4 @@
-from distutils.extension import Extension
+from setuptools import Extension
 
 ext_modules = [Extension("{prefix}fgm",
     ["src/cython/{prefix}fgm.pyx",

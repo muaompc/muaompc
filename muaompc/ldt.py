@@ -26,6 +26,7 @@ from muaompc._ldt.codegen.former.cvp import codegen as cvpcodegen
 from muaompc._ldt.codegen.former.cvp import codegency as cvpcodegency
 from muaompc._ldt.codegen.former.cvp import codegenmat as cvpcodegenmat
 from muaompc._ldt.codegen.solver.pbm import codegen as pbmcodegen
+from muaompc._ldt.codegen.solver.pbm import codegency as pbmcodegency
 from muaompc._ldt.codegen.solver.fgm import codegen as fgmcodegen
 from muaompc._ldt.codegen.solver.fgm import codegency as fgmcodegency
 from muaompc._ldt.codegen.solver.fgm import codegenmat as fgmcodegenmat
@@ -33,6 +34,7 @@ from muaompc._ldt.codegen.solver.alm import codegen as almcodegen
 from muaompc._ldt.codegen.solver.alm import codegency as almcodegency
 from muaompc._ldt.codegen.solver.alm import codegenmat as almcodegenmat
 from muaompc._ldt.codegen.mpc import codegen as mpccodegen
+from muaompc._ldt.codegen.mpc import codegency as mpccodegency
 from muaompc._ldt.codegen.mpc import codegenmat as mpccodegenmat
 from muaompc._ldt.mpc.mpc import MPC
 
@@ -103,9 +105,9 @@ def setup_mpc_problem(fname, prefix='mpc', destdir='.', verbose=False,
             solver = 'alm'
             mcg = mpccodegen.CCodeGenerator(ccg, solver=solver, former=former)
     if cvp.is_socc_iec or (solver == 'pbm'):
-        cdg = pbmcodegen.CCodeGenerator(ccg)  # Use pbmcodegen.
-        cycdg = fgmcodegency.CythonCodeGenerator(cdg)
-        matcdg = fgmcodegenmat.MatlabCodeGenerator(cdg)
+        cdg = pbmcodegen.CCodeGenerator(ccg)
+        cycdg = pbmcodegency.CythonCodeGenerator(cdg)
+        #matcdg = pbmcodegenmat.MatlabCodeGenerator(cdg)  # interface not yet ready
         ddg = pbmcodegen.PBMCVPDataGenerator(cvpcg)
         sdg = pbmcodegen.CDataGenerator(cdg, cvpcg)
         solver = 'pbm'
@@ -114,12 +116,13 @@ def setup_mpc_problem(fname, prefix='mpc', destdir='.', verbose=False,
     cycdg.generate_code()
     matcdg.generate_code()
     mcg.generate_code()
+    cymcg = mpccodegency.CythonCodeGenerator(mcg, cvpcg)
+    cymcg.generate_code()
     matmcg = mpccodegenmat.MatlabCodeGenerator(mcg)
     matmcg.generate_code()
     matmcg.generate_matlab_make()  # this is always called last
     mpc = MPC(prbname, ccg, ddg, sdg, solver, former)
-    # base_dir = mpc.path['dest']
-    base_dir = os.path.join(destdir, prbname+'_'+prefix, 'src')
+    base_dir = mpc.path['dest']
     prb_path = os.path.join(base_dir, 'mpc.pickle')
     with open(prb_path, 'wb') as f:
         pickle.dump(mpc, f)
@@ -282,17 +285,7 @@ def _get_data_from_mat(name):
     return data
 
 def _get_data_dict_from_py(module):
-    try:
-        data = module.data
-    except(AttributeError,):
-        msg = ('Could not find data dictionary in Python module.'
-                'Check that data module contains a dictionary called "data"') 
-        raise SetupError(msg)
-    if not isinstance(data, dict):
-        msg = ('Found "data" attribute in data module, but it is not a dictionary.'
-                'Check that data module contains a dictionary called "data"') 
-        raise SetupError(msg)
-    return data
+    return vars(module)
 
 def _get_data_from_py(name):
     try:
@@ -340,7 +333,14 @@ def _parse_data_file(fname):
                 continue
 
             values = data.strip('[]')  # safe input for np.matrix
-            d[name] = np.array(np.matrix(values))
+
+            try: 
+                npmtx = np.matrix(values)
+            except ValueError as err:
+                msg = '%s Offending matrix: %s' % (err, values)
+                raise ValueError(msg)
+
+            d[name] = np.array(npmtx)
 
     return d
 
@@ -352,7 +352,7 @@ def _move_to_mucdir(mpc, dataname):
 
 def _move_to_single_dir(mpc, dataname):
     singledirpath = os.path.join(mpc.destdir, 
-                '%s_%s_%s' % (mpc.prbname, dataname, mpc.prefix))
+                '%s_%s_%s' % (mpc.prefix, mpc.prbname, dataname))
     try:
         os.mkdir(singledirpath)
     except FileExistsError:

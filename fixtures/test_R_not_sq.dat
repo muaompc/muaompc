@@ -1,0 +1,15 @@
+# R_not_sq: input weighting matrix should be square, and of shape 1x1 (mxm)
+# input constraints
+u_lb = [-100]
+u_ub = [100]
+# weighting matrices
+Q = [1, 0; 0, 1] 
+R = [1, 1, 1]  # not square, should 1x1 (mxm)
+P = [2, 3; 3, 4]
+# system matrices
+A = [1.,  0.0095162581964040437; 0.,  0.90483741803595941] 
+B = [9.6748360719191485e-05; 0.019032516392808087]
+# dimensions
+N = 2
+n = 2
+m = 1

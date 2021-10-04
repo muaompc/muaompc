@@ -9,40 +9,34 @@ with a particular focus on microcontroller applications.
 DOCLINES = __doc__.split("\n")
 
 import os
-from distutils.core import setup, Extension
+from setuptools import setup, find_packages
 
-import numpy.distutils.misc_util as np
+CLASSIFIERS = [
+"Development Status :: 4 - Beta",
+"Intended Audience :: Science/Research",
+"Intended Audience :: Developers",
+"License :: OSI Approved :: BSD License",
+"Programming Language :: C",
+"Programming Language :: Python",
+"Programming Language :: Python :: 3",
+"Topic :: Scientific/Engineering",
+"Operating System :: OS Independent",
+]
 
-
-CLASSIFIERS = """\
-Development Status :: 2 - Pre-Alpha
-Intended Audience :: Science/Research
-Intended Audience :: Developers
-License :: OSI Approved
-Programming Language :: C
-Programming Language :: Python
-Programming Language :: Python :: 3
-Topic :: Scientific/Engineering
-Operating System :: Microsoft :: Windows
-Operating System :: Linux
-Operating System :: MacOS
-"""
-
-NAME                = 'muAO-MPC'
+NAME                = 'muaompc'
 MAINTAINER          = "Pablo Zometa"
-MAINTAINER_EMAIL    = "pablo.zometa@ovgu.de"
+MAINTAINER_EMAIL    = "zometa@anixet.com"
 DESCRIPTION         = DOCLINES[0]
 LONG_DESCRIPTION    = "\n".join(DOCLINES[2:])
-URL                 = "http://ifatwww.et.uni-magdeburg.de/syst/mpctool/"
+URL                 = "https://github.com/muaompc/muaompc"
 LICENSE             = 'BSD'
-CLASSIFIERS         = filter(None, CLASSIFIERS.split('\n'))
 AUTHOR              = "Pablo Zometa, et.al."
-AUTHOR_EMAIL        = "pablo.zometa@ovgu.de"
+AUTHOR_EMAIL        = "zometa@anixet.com"
 PLATFORMS           = ["Windows", "Linux", "Mac OS-X"]
 MAJOR               = 1
 MINOR               = 0
 MICRO               = 0
-STATUS              = 'alpha-20160805'
+STATUS              = 'beta'
 ISRELEASED          = True
 VERSION             = '%d.%d.%d-%s' % (MAJOR, MINOR, MICRO, STATUS)
 
@@ -121,12 +115,12 @@ def setup_package():
           author=AUTHOR,
           author_email=AUTHOR_EMAIL,
           platforms=PLATFORMS,
-          requires=['cython', 'numpy', 'scipy', 'pyparse'],
+          install_requires=['cython', 'numpy', 'scipy', 'pyparsing'],
           # test_suite='tests',
           packages = packages,
           package_dir = p_dir,
           package_data = p_data,
-          data_files = [(f_dir, f_data), ('.', ['LICENSE.txt'])],
+          data_files = [(f_dir, f_data)],
           )
 
 if __name__ ==  '__main__':

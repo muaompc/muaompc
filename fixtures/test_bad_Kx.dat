@@ -1,0 +1,17 @@
+# bad_Kx: state constraint matrix Kx has 3 columns instead of two (n=2)
+# input constraints
+u_lb = [-100] 
+u_ub = [100]
+# weighting matrices
+Q = [1, 0; 0, 1] 
+R = [1]  
+P = [2, 3; 3, 4]  # matlab style
+A = [1.,  0.0095162581964040437; 0.,  0.90483741803595941] 
+B = [9.6748360719191485e-05; 0.019032516392808087]
+e_lb = [-1; 0]  # Kx has 2 rows
+e_ub = [1; 1]
+Kx = [3.5, 5.5, 3; 2, 1, 1]
+n = 2
+m = 1
+N = 2
+mu = 256.

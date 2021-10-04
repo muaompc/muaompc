@@ -8,22 +8,29 @@ The MPC optimization algorithm is a quadratic program (QP) solver based on an au
 
 The generated code has been tested in several platforms, including x86/AMD64 PCs, ARM Cortex-M microcontrollers, Lego Mindstorms NXT, and Arduino microcontrollers. 
 
+## Installation
+
+We have thoroughly tested μAO-MPC under Python 3.  To install type in a console:
+```
+pip install muaompc
+```
+
+Alternatively, to install from sources:
+```
+python setup.py install
+```
+
+
 ## μAO-MPC 1.x
 
- This version is a complete reimplementation of the μAO-MPC core. This new version is backwards incompatible with, yet very similar to, the currently available μAO-MPC 0.4.x and older. Version 1.x includes a new type of optimization algorithm, offers more flexibility, and deals with many more types of MPC setups.
+ This version is a complete reimplementation of the μAO-MPC core. This new version is backwards incompatible with, yet very similar to, the μAO-MPC 0.4.x (no longer being maintaned). Version 1.x includes a new type of optimization algorithm, offers more flexibility, and deals with many more types of MPC setups.
 
-If your MPC problem fits into a setpoint stabilization or trajectory tracking problem and want a stable well tested code generation tool, use μAO-MPC 0.4.x. If you have a problem that does not fit those two MPC problems, or you are in for an adventure, try version 1.x.
-
-Before you continue, please read the documentation.
-
-[Full documentation (HTML)](http://ifatwww.et.uni-magdeburg.de/syst/research/muAO-MPC/doc/html-1.0/index.html) - Here you will find the required information to get you started, the supported MPC setup, installation instructions, tutorials, and function references.
-
-[Full documentation (PDF)](http://ifatwww.et.uni-magdeburg.de/syst/research/muAO-MPC/doc/muaompc-1.0.pdf) - same as above, but in PDF.
-    
+Before you continue, please read the documentation in the `doc` folder.
+You can find examples and tutorials in the `examples\ldt` folder.
 
 ## Older versions
 
-Here is the link to [Older versions](http://ifatwww.et.uni-magdeburg.de/syst/muAO-MPC/)
+Here is the link to [Older versions](http://ifatwww.et.uni-magdeburg.de/syst/muAO-MPC/) (no longer being maintained).
 
 ## Citation
 
@@ -40,3 +47,8 @@ address = {Washington D.C., USA},
 pubtype = {proceedings}
 } 
 ```
+
+## License
+
+This software is released under the 3-Clause BSD license.
+
