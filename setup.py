@@ -115,7 +115,7 @@ def setup_package():
           author=AUTHOR,
           author_email=AUTHOR_EMAIL,
           platforms=PLATFORMS,
-          install_requires=['cython', 'numpy', 'scipy', 'pyparse'],
+          install_requires=['cython', 'numpy', 'scipy', 'pyparsing'],
           # test_suite='tests',
           packages = packages,
           package_dir = p_dir,
