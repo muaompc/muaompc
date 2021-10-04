@@ -37,8 +37,9 @@ MAJOR               = 1
 MINOR               = 0
 MICRO               = 0
 STATUS              = 'beta'
+MOD                 = 1 
 ISRELEASED          = True
-VERSION             = '%d.%d.%d-%s' % (MAJOR, MINOR, MICRO, STATUS)
+VERSION             = '%d.%d.%d-%s-%d' % (MAJOR, MINOR, MICRO, STATUS, MOD)
 
 def write_version_py(filename='muaompc/version.py'):
     cnt = """
