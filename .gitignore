@@ -74,7 +74,7 @@ instance/
 .scrapy
 
 # Sphinx documentation
-docs/_build/
+doc/_build/
 
 # PyBuilder
 target/
@@ -118,6 +118,10 @@ venv.bak/
 # Spyder project settings
 .spyderproject
 .spyproject
+
+# Visual Studio Code Workspace
+workspace.code-workspace
+.vscode/
 
 # Rope project settings
 .ropeproject
