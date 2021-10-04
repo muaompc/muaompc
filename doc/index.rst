@@ -8,14 +8,14 @@
 
 .. warning::
 
-   *muAO-MPC* is on an early alpha-stage development. Some 
+   *muAO-MPC* is on beta. Some 
    functionality is still quite fragile. See the list of :ref:`intro.known_issues` for details.
 
 
 .. warning::
 
    This document is still a work in progress. If you find errors, or have
-   any comments, please contact Pablo Zometa at :math:`pablo.zometa@ovgu.de`.
+   any comments, please create an issue in the `github repository <https://github.com/muaompc/muaompc>`_
 
 .. toctree::
    :maxdepth: 2

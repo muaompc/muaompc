@@ -145,10 +145,19 @@ the vectors
 and the scalars
 `\texttt{N}`, `\texttt{m}`, `\texttt{n}`.
 
-The matrices are specified using MATLAB syntax. For example, an identity matrix `I \in \mathbb{R}^{2 \times 2}` could be written in the following ways::
+In this tutorial, we provide the data in a ``.dat`` file.
+This is great for simple matrices that can be fitted into one line.
+
+.. note::
+
+   The data file can also be a python module. See :ref:`tutor.advanced` for an example.
+
+In the ``.dat`` format, the matrices are specified using MATLAB syntax. 
+For example, an identity matrix `I \in \mathbb{R}^{2 \times 2}` could be written in the following ways::
 
     I = [1 0; 0 1]
     I = [1, 0; 0, 1]
+
 
 
 Without going into further details, let us write data file. In your favourite text editor write::
@@ -263,7 +272,7 @@ and no prefix is specified (i.e. ``<prefix>=mpc``),
 then ``<prb_name>=myprb``, and the directory for the generated code 
 is ``mpc_myprb``.
 
-Inside the ``src`` folder, the code for solving a problem are generated: the C-code, and
+Inside the ``src`` folder, the code for solving a problem is generated: the C-code, and
 the Cython and MATLAB interfaces. All C-file names start with ``<prefix>``, which creates a sort of *name space*. 
 This allows you to have several generated code coexist in a single application, as long as
 each ``<prefix>`` is unique.
@@ -331,7 +340,7 @@ should be (tested in Ubuntu 20.04)::
 where  ``<>`` is a general place holder.
 
 Now you can use the interface which is encapsulated in a package called 
-``mpc``  which represents the MPC controller.  In general, the Python package's name
+``mpc``  which represents the MPC controller.  The Python package's name
 is the same as the ``<prefix>`` used during code generation.
 
 While in the folder ``mpc_myprb``, fire up your Python interpreter, and type::

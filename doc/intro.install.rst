@@ -8,17 +8,16 @@ Dependencies
 The following packages are required:
 
 * `Python <http://www.python.org/download/releases/>`_ interpreter.
-  This code has been fully tested with Python versions 3.2.3, 3.4.3 and
-  Python 2.7.3, 2.7.6.
+  This code has been fully tested with Python versions 3.8.5.  
 
-* `NumPy <http://www.numpy.org>`_, tested with versions 1.6.2, 1.10.4.
+* `NumPy <http://www.numpy.org>`_, tested with versions 1.21.2.
   It basically manages the linear
   algebra operations, and some extra features are used.
 
-* `SciPy <http://www.scipy.org>`_, tested with versions 0.10.
-  It is used for some tiny features are used.
+* `SciPy <http://www.scipy.org>`_, tested with versions 1.7.1.
+  Some features not included in numpy are used.
 
-* `PyParsing <http://pyparsing.wikispaces.com>`_, tested with versions 2.1.4.
+* `PyParsing <http://pyparsing.wikispaces.com>`_, tested with versions 2.4.7.
   It is used for parsing the problem.
 
 * A C89/C90 compiler.
@@ -28,12 +27,17 @@ The following packages are required:
 Optional packages are:
 
 * `Cython <http://cython.org/>`_ to compile the Python interface to the
-  generated C-code.
+  generated C-code. Tested with version 0.29.24.
 
 Building and installing
 =======================
 
-``muaompc`` installation is made directly from `source code <http://ifatwww.et.uni-magdeburg.de/syst/mpctool/#download>`_.
+The easiest way to install ``muaompc`` and all its dependencies is via pip::
+
+  pip install muaompc 
+
+
+Alternatively, you can install ``muaompc`` directly from `source code <https://github.com/muaompc/muaompc>`_.
 
 Install from source in Linux and Mac OS X
 -----------------------------------------
