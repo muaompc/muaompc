@@ -20,15 +20,12 @@ Alternatively, to install from sources:
 python setup.py install
 ```
 
+For further details, see [the documentation](https://muaompc.readthedocs.io/en/latest/index.html).
+You can find examples and tutorials in the [examples\ldt](https://github.com/muaompc/muaompc/tree/main/examples/ldt) folder.
 
 ## μAO-MPC 1.x
 
  This version is a complete reimplementation of the μAO-MPC core. This new version is backwards incompatible with, yet very similar to, the μAO-MPC 0.4.x (no longer being maintaned). Version 1.x includes a new type of optimization algorithm, offers more flexibility, and deals with many more types of MPC setups.
-
-Before you continue, please read the documentation in the `doc` folder.
-You can find examples and tutorials in the `examples\ldt` folder.
-
-## Older versions
 
 Here is the link to [Older versions](http://ifatwww.et.uni-magdeburg.de/syst/muAO-MPC/) (no longer being maintained).
 
